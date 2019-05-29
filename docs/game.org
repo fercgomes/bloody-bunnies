@@ -1,0 +1,13 @@
+* GameObject (top class)
+  - draw()
+* World 
+  - World boundaries
+* Objects
+  - Position
+  - Model
+* User Input
+* Game 
+* OpenGL manager
+** Models
+** Windowing
+** User input
