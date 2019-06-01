@@ -11,11 +11,12 @@ class ModelComponent : public Component
 private:
     Object3D model;
     GLManager* glManager;
+    std::string shader;
 
 public:
-
-    ModelComponent(const char* filename, GLManager* glManager) :
-        glManager(glManager)
+    ModelComponent(const char* filename, GLManager* glManager, std::string shader) :
+        glManager(glManager),
+        shader(shader)
     {
         bool triangulate = true;
         const char* basepath = NULL;
@@ -37,6 +38,7 @@ public:
 
     void update() override
     {
+        glManager->setActiveShader(shader);
     }
 
     void draw() override

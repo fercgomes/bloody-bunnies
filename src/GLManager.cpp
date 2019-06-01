@@ -1,4 +1,5 @@
 #include "GLManager.h"
+#include <iostream>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -211,58 +212,27 @@ Object3D GLManager::generateObject3D(ObjModel* model)
 
 void GLManager::drawObject(Object3D& model)
 {
-    // "Ligamos" o VAO. Informamos que queremos utilizar os atributos de
-    // vértices apontados pelo VAO criado pela função BuildTrianglesAndAddToVirtualScene(). Veja
-    // comentários detalhados dentro da definição de BuildTrianglesAndAddToVirtualScene().
     glBindVertexArray(model.vertex_array_object_id);
-
-    // Pedimos para a GPU rasterizar os vértices dos eixos XYZ
-    // apontados pelo VAO como linhas. Veja a definição de
-    // g_VirtualScene[""] dentro da função BuildTrianglesAndAddToVirtualScene(), e veja
-    // a documentação da função glDrawElements() em
-    // http://docs.gl/gl3/glDrawElements.
     glDrawElements(
         model.rendering_mode,
         model.num_indices,
         GL_UNSIGNED_INT,
         (void*)model.first_index
     );
-
-    // "Desligamos" o VAO, evitando assim que operações posteriores venham a
-    // alterar o mesmo. Isso evita bugs.
     glBindVertexArray(0);
 }
 
 
-void GLManager::LoadShadersFromFiles(const char* vertex, const char* fragment)
+void GLManager::LoadShadersFromFiles()
 {
-    // Note que o caminho para os arquivos "shader_vertex.glsl" e
-    // "shader_fragment.glsl" estão fixados, sendo que assumimos a existência
-    // da seguinte estrutura no sistema de arquivos:
-    //
-    //    + FCG_Lab_01/
-    //    |
-    //    +--+ bin/
-    //    |  |
-    //    |  +--+ Release/  (ou Debug/ ou Linux/)
-    //    |     |
-    //    |     o-- main.exe
-    //    |
-    //    +--+ src/
-    //       |
-    //       o-- shader_vertex.glsl
-    //       |
-    //       o-- shader_fragment.glsl
-    //
-    vertex_shader_id = LoadShader_Vertex(vertex);
-    fragment_shader_id = LoadShader_Fragment(fragment);
+    const char* defaultVertex = "../src/shader_vertex.glsl";
+    const char* defaultFragment = "../src/shader_fragment.glsl";
 
-    // Deletamos o programa de GPU anterior, caso ele exista.
-    if ( program_id != 0 )
-        glDeleteProgram(program_id);
+    auto vertex_shader_id = LoadShader_Vertex(defaultVertex);
+    auto fragment_shader_id = LoadShader_Fragment(defaultFragment);
 
-    // Criamos um programa de GPU utilizando os shaders carregados acima.
-    program_id = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
+    auto program_id = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
+    shaders.emplace(std::pair<std::string, GLuint>("defaultShader", program_id));
 
     // Buscamos o endereço das variáveis definidas dentro do Vertex Shader.
     // Utilizaremos estas variáveis para enviar dados para a placa de vídeo
@@ -270,7 +240,6 @@ void GLManager::LoadShadersFromFiles(const char* vertex, const char* fragment)
     model_uniform           = glGetUniformLocation(program_id, "model"); // Variável da matriz "model"
     view_uniform            = glGetUniformLocation(program_id, "view"); // Variável da matriz "view" em shader_vertex.glsl
     projection_uniform      = glGetUniformLocation(program_id, "projection"); // Variável da matriz "projection" em shader_vertex.glsl
-    object_id_uniform       = glGetUniformLocation(program_id, "object_id"); // Variável "object_id" em shader_fragment.glsl
 }
 
 GLuint GLManager::LoadShader_Vertex(const char* filename)
@@ -362,6 +331,8 @@ void GLManager::LoadShader(const char* filename, GLuint shader_id)
 
         fprintf(stderr, "%s", output.c_str());
     }
+    else
+        std::cout << "Shader compiled." << std::endl;
 
     // A chamada "delete" em C++ é equivalente ao "free()" do C
     delete [] log;
@@ -418,5 +389,17 @@ GLuint GLManager::CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shad
 
 GLManager::GLManager(const char* vertexShader, const char* fragmentShader)
 {
-    LoadShadersFromFiles(vertexShader, fragmentShader);
+    LoadShadersFromFiles();
+}
+
+void GLManager::setActiveShader(std::string shaderName)
+{
+    if(shaderName.empty())
+    {
+        glUseProgram(shaders["defaultShader"]);
+    }
+    else
+    {
+        glUseProgram(shaders[shaderName]);
+    }
 }

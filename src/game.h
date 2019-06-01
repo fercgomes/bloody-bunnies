@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "GLManager.h"
+#include <GLFW/glfw3.h>
 
 class Game
 {
@@ -20,15 +21,10 @@ public:
     bool running();
     static bool isRunning;
 
-    // static SDL_Renderer *renderer;
-    static SDL_Event event;
-    // static AssetManager* assets;
-
-    // static SDL_Rect camera;
-
     enum groupLabels : std::size_t
     {
-        testGroup
+        testGroup,
+        groupGrass
         // groupMap,
         // groupPlayers,
         // groupColliders,
@@ -36,8 +32,7 @@ public:
     };
 
 private:
-    SDL_Window *window;
-    SDL_GLContext context;
+    GLFWwindow *window;
 
     int count;
 };

@@ -45,14 +45,11 @@ public:
 class GLManager
 {
 public:
-    // Variáveis que definem um programa de GPU (shaders). Veja função LoadShadersFromFiles().
-    GLuint vertex_shader_id;
-    GLuint fragment_shader_id;
-    GLuint program_id;
+    std::map<std::string, GLuint> shaders;
+
     GLint model_uniform;
     GLint view_uniform;
     GLint projection_uniform;
-    GLint object_id_uniform;
 
     /* generates a object to use with DrawElements */
     Object3D generateObject3D(ObjModel* model);
@@ -60,11 +57,13 @@ public:
     /* draws a object from a Object3D */
     void drawObject(Object3D& model);
 
-    void LoadShadersFromFiles(const char* vertex, const char* fragment); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
+    void LoadShadersFromFiles(); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
     GLuint LoadShader_Vertex(const char* filename);   // Carrega um vertex shader
     GLuint LoadShader_Fragment(const char* filename); // Carrega um fragment shader
     void LoadShader(const char* filename, GLuint shader_id); // Função utilizada pelas duas acima
     GLuint CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shader_id); // Cria um programa de GPU
+
+    void setActiveShader(std::string shaderName);
 
     GLManager() {}
     GLManager(const char* vertexShader, const char* fragmentShader);
