@@ -6,16 +6,18 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec4.hpp>
 #include "../include/matrices.h"
+#include "../game.h"
 
 #define PI 3.14
 
-#define GRAV 0.01f
+#define GRAV 0.5f
 
 class TransformComponent : public Component
 {
 public:
     Vector3D position;
     Vector3D velocity;
+
     Vector3D lookingAt;
 
     glm::mat4 modelMatrix;
@@ -28,8 +30,6 @@ public:
     float x_Scale;
     float y_Scale;
     float z_Scale;
-
-    float speed = 1.1f;
 
     TransformComponent()
     {
@@ -79,9 +79,9 @@ public:
 
     void update() override
     {
-        position.x += velocity.x * speed;
-        position.y += velocity.y * speed;
-        position.z += velocity.z * speed;
+        position.x += velocity.x * Game::dt;
+        position.y += velocity.y * Game::dt;
+        position.z += velocity.z * Game::dt;
 
         if(!fixed)
         {

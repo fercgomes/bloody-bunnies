@@ -13,7 +13,7 @@ class Camera
 {
 private:
     float theta = 0.0f; // Ângulo no plano ZX em relação ao eixo Z
-    float phi = 0.8f;   // Ângulo em relação ao eixo Y
+    float phi = 0.0f;   // Ângulo em relação ao eixo Y
     float distance = 3.5f; // Distância da câmera para a origem
 
     glm::vec4 camera_position_c;
@@ -24,10 +24,10 @@ private:
     glm::mat4 viewMatrix;
 
     float nearplane = -0.1f;
-    float farplane  = -40.0f;
+    float farplane  = -15.0f;
     
     float field_of_view = 3.141592 / 3.0f;
-    float screenRatio = 1.0f;
+    float screenRatio = 1.3333f;
 
     Entity* boundEntity = NULL;
 

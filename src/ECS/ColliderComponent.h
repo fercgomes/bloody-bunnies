@@ -2,12 +2,14 @@
 #include <string>
 #include "SDL2/SDL.h"
 #include "Components.h"
+#include <glm/vec4.hpp>
 
 class ColliderComponent : public Component
 {
 
 public:
     std::string tag;
+
 
     TransformComponent *transform;
 

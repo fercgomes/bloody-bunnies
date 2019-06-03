@@ -10,6 +10,7 @@ float g_CameraDistance = 3.5f; // Distância da câmera para a origem
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+    Game::screenRatio = (float) width / height;
 }
 
 double g_LastCursorPosX, g_LastCursorPosY;

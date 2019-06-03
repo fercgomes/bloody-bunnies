@@ -21,6 +21,9 @@ public:
     bool running();
     static bool isRunning;
 
+    static double dt;
+    static float screenRatio;
+
     enum groupLabels : std::size_t
     {
         testGroup,

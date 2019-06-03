@@ -1,11 +1,17 @@
 #include "Camera.h"
+#include "game.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec4.hpp>
+
+inline float to_degrees(float radians)
+{
+    return radians * (180.0 / M_PI);
+}
 
 Camera::Camera()
 {
     camera_position_c = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    camera_lookat_l = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    camera_lookat_l = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 Camera::Camera(glm::vec4 camPos, glm::vec4 lookAtPos)
@@ -28,7 +34,7 @@ glm::mat4 Camera::getViewMatrix()
 
 glm::mat4 Camera::getProjectionMatrix()
 {
-    return Matrix_Perspective(field_of_view, screenRatio, nearplane, farplane);
+    return Matrix_Perspective(field_of_view, Game::screenRatio, nearplane, farplane);
 }
 
 bool Camera::bindEntity(Entity* ent)
@@ -59,21 +65,17 @@ void Camera::update()
 
     auto entPos = boundEntity->getComponent<TransformComponent>().getPos();
 
-
     switch(cameraMode)
     {
-
         case lookAtEntity:
-            camera_lookat_l = entPos;
-            x += entPos.x;
-            y += entPos.y;
-            z += entPos.z;
+            camera_lookat_l = glm::vec4(entPos.x, entPos.y, entPos.z, 1.0f);
             camera_position_c = glm::vec4(x, y, z, 1.0f);
             break;
         
         case lookAtEntityAndFollow:
             camera_lookat_l = entPos;
-            camera_position_c = glm::vec4(x, y, z, 1.0f);
+
+            camera_position_c = glm::vec4(x + entPos.x, y + entPos.y, z + entPos.z, 1.0f);
             break;
 
         default:

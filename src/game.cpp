@@ -7,7 +7,6 @@
 #include "GLManager.h"
 #include "Camera.h"
 #include "Audio.cpp"
-#include "callbacks.h"
 
 #include "InputManager.cpp"
 
@@ -17,6 +16,10 @@ GLManager* glManager;
 Camera* camera;
 
 bool Game::isRunning = false;
+double Game::dt = 0;
+float Game::screenRatio = 1.0f;
+
+#include "callbacks.h"
 
 // auto& player(manager.addEntity());
 // auto& label(manager.addEntity());
@@ -87,8 +90,8 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     glManager = new GLManager("../src/shader_vertex.glsl", "../src/shader_fragment.glsl");
     camera = new Camera();
 
-    testEntity.addComponent<TransformComponent>();
-    testEntity.addComponent<ModelComponent>("../data/mafiaguy/mafia.obj", glManager, "defaultShader");
+    testEntity.addComponent<TransformComponent>(0.001f, 0.002f, 0.001f);
+    testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "defaultShader");
     testEntity.addComponent<KeyboardController>();
     testEntity.addGroup(testGroup);
 
@@ -101,7 +104,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     testEntity2.addGroup(groupGrass);
 
     camera->bindEntity(&testEntity);
-    camera->setCameraMode(lookAtEntity);
+    camera->setCameraMode(lookAtEntityAndFollow);
 
     // Audio::play("../420.wav");
 }
@@ -143,10 +146,7 @@ void Game::render()
     for(auto& t : tGroup)
     {
         /* Fetch the model matrix for this entity */
-        glm::mat4 model = t->getComponent<TransformComponent>().getModelMatrix() * Matrix_Scale(0.2f, 0.2, 0.2f)
-                        /* This should not be here */
-                        * Matrix_Rotate_Y(PI)
-                        * Matrix_Rotate_X(-PI/2.0f);
+        glm::mat4 model = t->getComponent<TransformComponent>().getModelMatrix();
         /* Send it to the GPU */
         glUniformMatrix4fv(glManager->model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
 
@@ -156,7 +156,7 @@ void Game::render()
     for(auto& t : tGrass)
     {
         /* Fetch the model matrix for this entity */
-        glm::mat4 model = t->getComponent<TransformComponent>().getModelMatrix() * Matrix_Scale(0.2f, 0.2f, 0.2f);
+        glm::mat4 model = t->getComponent<TransformComponent>().getModelMatrix();
         /* Send it to the GPU */
         glUniformMatrix4fv(glManager->model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
 
@@ -179,7 +179,7 @@ bool Game::running()
 
 static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 {
-    float walkSpeed = 0.1f;
+    float walkSpeed = 10.0f;
 
     if (key == GLFW_KEY_W && action == GLFW_PRESS)
         testEntity.getComponent<TransformComponent>().velocity.z = walkSpeed;
@@ -202,5 +202,5 @@ static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
         testEntity.getComponent<TransformComponent>().velocity.x = 0.0f;
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-        testEntity.getComponent<TransformComponent>().velocity.y = walkSpeed;
+        testEntity.getComponent<TransformComponent>().velocity.y = 5.0f;
 }
