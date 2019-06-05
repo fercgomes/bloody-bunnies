@@ -2,6 +2,7 @@
 #include "game.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec4.hpp>
+#include <matrices.h>
 
 inline float to_degrees(float radians)
 {
@@ -84,4 +85,10 @@ void Camera::update()
 
     /* Update view vector */
     camera_view_vector = camera_lookat_l - camera_position_c;
+
+    /* update entity direction */
+    auto& transf = boundEntity->getComponent<TransformComponent>();
+    glm::vec4 velVec = glm::normalize(camera_view_vector);
+    transf.velocity.x = transf.velAmount * velVec.x;
+    transf.velocity.z = transf.velAmount * velVec.z;
 }

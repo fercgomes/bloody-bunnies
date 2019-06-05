@@ -31,6 +31,9 @@ public:
     float y_Scale;
     float z_Scale;
 
+    float moving = 0.0f;
+    float velAmount = 4.0f;
+
     TransformComponent()
     {
         position = Vector3D(0.0f, 0.0f, 0.0f);
@@ -79,9 +82,9 @@ public:
 
     void update() override
     {
-        position.x += velocity.x * Game::dt;
-        position.y += velocity.y * Game::dt;
-        position.z += velocity.z * Game::dt;
+        position.x += moving * velocity.x * Game::dt;
+        position.y += moving * velocity.y * Game::dt;
+        position.z += moving * velocity.z * Game::dt;
 
         if(!fixed)
         {

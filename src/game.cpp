@@ -6,7 +6,6 @@
 #include <matrices.h>
 #include "GLManager.h"
 #include "Camera.h"
-#include "Audio.cpp"
 
 #include "InputManager.cpp"
 
@@ -28,6 +27,7 @@ auto& testEntity(manager.addEntity());
 auto& testEntity2(manager.addEntity());
 
 static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod);
+
 
 Game::Game()
 {}
@@ -90,6 +90,9 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     glManager = new GLManager("../src/shader_vertex.glsl", "../src/shader_fragment.glsl");
     camera = new Camera();
 
+    /* Load text rendering */
+    glManager->TextRendering_Init();
+
     testEntity.addComponent<TransformComponent>(0.001f, 0.002f, 0.001f);
     testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "defaultShader");
     testEntity.addComponent<KeyboardController>();
@@ -119,11 +122,12 @@ void Game::handleEvents()
 
 void Game::update()
 {
+    camera->setCameraAngles(g_CameraDistance, g_CameraTheta, g_CameraPhi);
+    camera->update();
+
     manager.refresh();
     manager.update();
 
-    camera->setCameraAngles(g_CameraDistance, g_CameraTheta, g_CameraPhi);
-    camera->update();
 
     Game::isRunning = !glfwWindowShouldClose(window);
 }
@@ -133,6 +137,7 @@ void Game::render()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
     glm::mat4 view = camera->getViewMatrix();
     glm::mat4 projection = camera->getProjectionMatrix();
@@ -163,6 +168,9 @@ void Game::render()
         t->draw();
     }
 
+    glManager->TextRendering_PrintString(window, "teste", 10, 10, 2.0f);
+    glManager->TextRendering_PrintMatrix(window, testEntity.getComponent<TransformComponent>().getModelMatrix(), 100, 20, 1.0f);
+
     glfwSwapBuffers(window);
 }
 
@@ -179,17 +187,27 @@ bool Game::running()
 
 static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 {
-    float walkSpeed = 10.0f;
+    float walkSpeed = 5.0f;
+
+    auto& transf = testEntity.getComponent<TransformComponent>();
 
     if (key == GLFW_KEY_W && action == GLFW_PRESS)
-        testEntity.getComponent<TransformComponent>().velocity.z = walkSpeed;
+    {
+        transf.moving = 1.0f;
+    }
+
     if (key == GLFW_KEY_W && action == GLFW_RELEASE)
-        testEntity.getComponent<TransformComponent>().velocity.z = 0.0f;
+        transf.moving = 0.0f;
 
     if (key == GLFW_KEY_S && action == GLFW_PRESS)
-        testEntity.getComponent<TransformComponent>().velocity.z = -walkSpeed;
+    {
+        transf.velocity.x = - walkSpeed * transf.lookingAt.x;
+        transf.velocity.z = - walkSpeed * transf.lookingAt.z;
+    }
+
     if (key == GLFW_KEY_S && action == GLFW_RELEASE)
-        testEntity.getComponent<TransformComponent>().velocity.z = 0.0f;
+        testEntity.getComponent<TransformComponent>().velocity = Vector3D(0.0, 0.0, 0.0);
+
 
     if (key == GLFW_KEY_D && action == GLFW_PRESS)
         testEntity.getComponent<TransformComponent>().velocity.x = -walkSpeed;
@@ -202,5 +220,5 @@ static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
         testEntity.getComponent<TransformComponent>().velocity.x = 0.0f;
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-        testEntity.getComponent<TransformComponent>().velocity.y = 5.0f;
+        testEntity.getComponent<TransformComponent>().velocity.y = 8.0f;
 }

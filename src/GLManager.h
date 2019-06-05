@@ -1,5 +1,6 @@
 #pragma once
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <string>
 #include <vector>
 #include "../include/tiny_obj_loader.h"
@@ -63,8 +64,47 @@ public:
     void LoadShader(const char* filename, GLuint shader_id); // Função utilizada pelas duas acima
     GLuint CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shader_id); // Cria um programa de GPU
 
+    // Declaração de funções auxiliares para renderizar texto dentro da janela
+    // OpenGL. Estas funções estão definidas no arquivo "textrendering.cpp".
+    void TextRendering_Init();
+    void TextRendering_LoadShader(const GLchar* const shader_string, GLuint shader_id);
+    float TextRendering_LineHeight(GLFWwindow* window);
+    float TextRendering_CharWidth(GLFWwindow* window);
+    void TextRendering_PrintString(GLFWwindow* window, const std::string &str, float x, float y, float scale = 1.0f);
+    void TextRendering_PrintMatrix(GLFWwindow* window, glm::mat4 M, float x, float y, float scale = 1.0f);
+    void TextRendering_PrintVector(GLFWwindow* window, glm::vec4 v, float x, float y, float scale = 1.0f);
+    void TextRendering_ShowFramesPerSecond(GLFWwindow* window);
+
     void setActiveShader(std::string shaderName);
 
     GLManager() {}
     GLManager(const char* vertexShader, const char* fragmentShader);
+
+private:
+    GLuint textVAO;
+    GLuint textVBO;
+    GLuint textprogram_id;
+    GLuint texttexture_id;
+
+    const GLchar* const textvertexshader_source = ""
+    "#version 330\n"
+    "layout (location = 0) in vec4 position;\n"
+    "out vec2 texCoords;\n"
+    "void main()\n"
+    "{\n"
+        "gl_Position = vec4(position.xy, 0, 1);\n"
+        "texCoords = position.zw;\n"
+    "}\n"
+    "\0";
+
+    const GLchar* const textfragmentshader_source = ""
+    "#version 330\n"
+    "uniform sampler2D tex;\n"
+    "in vec2 texCoords;\n"
+    "out vec4 fragColor;\n"
+    "void main()\n"
+    "{\n"
+        "fragColor = vec4(0, 0, 0, texture(tex, texCoords).r);\n"
+    "}\n"
+    "\0";
 };
