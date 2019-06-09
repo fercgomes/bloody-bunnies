@@ -59,6 +59,8 @@ private:
     GroupBitSet groupBitSet;
 
 public:
+    std::string name;
+
     Entity(Manager& mManager) : manager(mManager)
     {
 

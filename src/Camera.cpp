@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "ECS/Components.h"
 #include "game.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec4.hpp>
@@ -11,14 +12,14 @@ inline float to_degrees(float radians)
 
 Camera::Camera()
 {
-    camera_position_c = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    camera_lookat_l = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    lookAt = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 Camera::Camera(glm::vec4 camPos, glm::vec4 lookAtPos)
 {
-    camera_position_c = camPos;
-    camera_lookat_l = lookAtPos;
+    position = camPos;
+    lookAt = lookAtPos;
 }
 
 void Camera::setCameraAngles(float distance, float theta, float phi)
@@ -30,7 +31,7 @@ void Camera::setCameraAngles(float distance, float theta, float phi)
 
 glm::mat4 Camera::getViewMatrix()
 {
-    return Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
+    return Matrix_Camera_View(position, viewVector, upVector);
 }
 
 glm::mat4 Camera::getProjectionMatrix()
@@ -69,14 +70,14 @@ void Camera::update()
     switch(cameraMode)
     {
         case lookAtEntity:
-            camera_lookat_l = glm::vec4(entPos.x, entPos.y, entPos.z, 1.0f);
-            camera_position_c = glm::vec4(x, y, z, 1.0f);
+            lookAt = glm::vec4(entPos.x, entPos.y, entPos.z, 1.0f);
+            position = glm::vec4(x, y, z, 1.0f);
             break;
         
         case lookAtEntityAndFollow:
-            camera_lookat_l = entPos;
+            lookAt = entPos;
 
-            camera_position_c = glm::vec4(x + entPos.x, y + entPos.y, z + entPos.z, 1.0f);
+            position = glm::vec4(x + entPos.x, y + entPos.y, z + entPos.z, 1.0f);
             break;
 
         default:
@@ -84,11 +85,6 @@ void Camera::update()
     }
 
     /* Update view vector */
-    camera_view_vector = camera_lookat_l - camera_position_c;
+    viewVector = lookAt - position;
 
-    /* update entity direction */
-    auto& transf = boundEntity->getComponent<TransformComponent>();
-    glm::vec4 velVec = glm::normalize(camera_view_vector);
-    transf.velocity.x = transf.velAmount * velVec.x;
-    transf.velocity.z = transf.velAmount * velVec.z;
 }

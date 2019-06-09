@@ -1,3 +1,4 @@
+#include "Camera.h"
 #include "game.h"
 #include "ECS/Components.h"
 #include <GL/glew.h>
@@ -5,12 +6,8 @@
 #include <sstream>
 #include <matrices.h>
 #include "GLManager.h"
-#include "Camera.h"
-
-#include "InputManager.cpp"
 
 Manager manager;
-// GLManager glManager("../src/shader_vertex.glsl", "../src/shader_fragment.glsl");
 GLManager* glManager;
 Camera* camera;
 
@@ -20,14 +17,8 @@ float Game::screenRatio = 1.0f;
 
 #include "callbacks.h"
 
-// auto& player(manager.addEntity());
-// auto& label(manager.addEntity());
-
 auto& testEntity(manager.addEntity());
 auto& testEntity2(manager.addEntity());
-
-static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod);
-
 
 Game::Game()
 {}
@@ -35,7 +26,7 @@ Game::Game()
 Game::~Game()
 {}
 
-void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen)
+void Game::init(const char* title, int width, int height)
 {
     int success = glfwInit();
     if (!success)
@@ -43,6 +34,9 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         fprintf(stderr, "ERROR: glfwInit() failed.\n");
         std::exit(EXIT_FAILURE);
     }
+
+    /* Set game's screen ratio */
+    Game::screenRatio = (float) width / height;
 
     glfwSetErrorCallback(ErrorCallback);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -54,7 +48,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(800, 600, "INF01047 - Seu Cartao - Seu Nome", NULL, NULL);
+    window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -64,13 +58,12 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     
     Game::isRunning = true;
 
-    glfwSetKeyCallback(window, KeyCallback);
     glfwSetMouseButtonCallback(window, MouseButtonCallback);
     glfwSetCursorPosCallback(window, CursorPosCallback);
     glfwSetScrollCallback(window, ScrollCallback);
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
-    FramebufferSizeCallback(window, 800, 600); // Forçamos a chamada do callback acima, para definir g_ScreenRatio.
+    FramebufferSizeCallback(window, width, height);
 
     const GLubyte *vendor      = glGetString(GL_VENDOR);
     const GLubyte *renderer    = glGetString(GL_RENDERER);
@@ -95,8 +88,11 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     testEntity.addComponent<TransformComponent>(0.001f, 0.002f, 0.001f);
     testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "defaultShader");
-    testEntity.addComponent<KeyboardController>();
+    testEntity.addComponent<KeyboardController>(camera);
+    testEntity.name = "player";
     testEntity.addGroup(testGroup);
+
+    testEntity.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 
     TransformComponent transf = testEntity.getComponent<TransformComponent>();
     transf.setStuff(-PI/2.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f);
@@ -104,6 +100,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     testEntity2.addComponent<TransformComponent>(0.0f, 0.0f, 0.0f);
     testEntity2.getComponent<TransformComponent>().fixed = true;
     testEntity2.addComponent<ModelComponent>("../plant.obj", glManager, "defaultShader");
+    testEntity2.name = "plant";
     testEntity2.addGroup(groupGrass);
 
     camera->bindEntity(&testEntity);
@@ -118,16 +115,49 @@ auto& tGrass(manager.getGroup(Game::groupGrass));
 void Game::handleEvents()
 {
     glfwPollEvents();
+    
+    /* TODO: key manager */
+
+    auto player = &testEntity.getComponent<KeyboardController>();
+
+    int state = glfwGetKey(window, GLFW_KEY_W);
+    if(state == GLFW_PRESS)
+       player->goingForward = true;
+    else if(state == GLFW_RELEASE)
+        player->goingForward = false;
+
+    state = glfwGetKey(window, GLFW_KEY_S);
+    if(state == GLFW_PRESS)
+       player->goingBackwards = true;
+    else if(state == GLFW_RELEASE)
+        player->goingBackwards = false;
+
+    state = glfwGetKey(window, GLFW_KEY_D);
+    if(state == GLFW_PRESS)
+       player->goingRight = true;
+    else if(state == GLFW_RELEASE)
+        player->goingRight = false;
+
+    state = glfwGetKey(window, GLFW_KEY_A);
+    if(state == GLFW_PRESS)
+       player->goingLeft = true;
+    else if(state == GLFW_RELEASE)
+        player->goingLeft = false;
+
+    state = glfwGetKey(window, GLFW_KEY_SPACE);
+    if(state == GLFW_PRESS)
+        player->jump = true;
 }
 
 void Game::update()
 {
-    camera->setCameraAngles(g_CameraDistance, g_CameraTheta, g_CameraPhi);
-    camera->update();
-
     manager.refresh();
     manager.update();
 
+    testEntity.getComponent<TransformComponent>().y_Rotation = 2.5f + g_CameraTheta;
+
+    camera->setCameraAngles(g_CameraDistance, g_CameraTheta, g_CameraPhi);
+    camera->update();
 
     Game::isRunning = !glfwWindowShouldClose(window);
 }
@@ -138,38 +168,21 @@ void Game::render()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
     glm::mat4 view = camera->getViewMatrix();
     glm::mat4 projection = camera->getProjectionMatrix();
 
-    // Enviamos as matrizes "view" e "projection" para a placa de vídeo
-    // (GPU). Veja o arquivo "shader_vertex.glsl", onde estas são
-    // efetivamente aplicadas em todos os pontos.
     glUniformMatrix4fv(glManager->view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
     glUniformMatrix4fv(glManager->projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
     for(auto& t : tGroup)
     {
-        /* Fetch the model matrix for this entity */
-        glm::mat4 model = t->getComponent<TransformComponent>().getModelMatrix();
-        /* Send it to the GPU */
-        glUniformMatrix4fv(glManager->model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-
         t->draw();
     }
 
     for(auto& t : tGrass)
     {
-        /* Fetch the model matrix for this entity */
-        glm::mat4 model = t->getComponent<TransformComponent>().getModelMatrix();
-        /* Send it to the GPU */
-        glUniformMatrix4fv(glManager->model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-
         t->draw();
     }
-
-    glManager->TextRendering_PrintString(window, "teste", 10, 10, 2.0f);
-    glManager->TextRendering_PrintMatrix(window, testEntity.getComponent<TransformComponent>().getModelMatrix(), 100, 20, 1.0f);
 
     glfwSwapBuffers(window);
 }
@@ -183,42 +196,4 @@ void Game::clean()
 bool Game::running()
 {
     return isRunning;
-}
-
-static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
-{
-    float walkSpeed = 5.0f;
-
-    auto& transf = testEntity.getComponent<TransformComponent>();
-
-    if (key == GLFW_KEY_W && action == GLFW_PRESS)
-    {
-        transf.moving = 1.0f;
-    }
-
-    if (key == GLFW_KEY_W && action == GLFW_RELEASE)
-        transf.moving = 0.0f;
-
-    if (key == GLFW_KEY_S && action == GLFW_PRESS)
-    {
-        transf.velocity.x = - walkSpeed * transf.lookingAt.x;
-        transf.velocity.z = - walkSpeed * transf.lookingAt.z;
-    }
-
-    if (key == GLFW_KEY_S && action == GLFW_RELEASE)
-        testEntity.getComponent<TransformComponent>().velocity = Vector3D(0.0, 0.0, 0.0);
-
-
-    if (key == GLFW_KEY_D && action == GLFW_PRESS)
-        testEntity.getComponent<TransformComponent>().velocity.x = -walkSpeed;
-    if (key == GLFW_KEY_D && action == GLFW_RELEASE)
-        testEntity.getComponent<TransformComponent>().velocity.x = 0.0f;
-
-    if (key == GLFW_KEY_A && action == GLFW_PRESS)
-        testEntity.getComponent<TransformComponent>().velocity.x = walkSpeed;
-    if (key == GLFW_KEY_A && action == GLFW_RELEASE)
-        testEntity.getComponent<TransformComponent>().velocity.x = 0.0f;
-
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-        testEntity.getComponent<TransformComponent>().velocity.y = 8.0f;
 }

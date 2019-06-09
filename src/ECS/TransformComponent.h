@@ -10,7 +10,7 @@
 
 #define PI 3.14
 
-#define GRAV 0.5f
+#define GRAV_FORCE 9.8f
 
 class TransformComponent : public Component
 {
@@ -18,15 +18,13 @@ public:
     Vector3D position;
     Vector3D velocity;
 
-    Vector3D lookingAt;
-
-    glm::mat4 modelMatrix;
     bool onAir = false;
     bool fixed = false;
 
     float x_Rotation;
     float y_Rotation;
     float z_Rotation;
+
     float x_Scale;
     float y_Scale;
     float z_Scale;
@@ -71,10 +69,16 @@ public:
 
     glm::mat4 getModelMatrix()
     {
-        return modelMatrix;
+        return        Matrix_Identity()
+                    * Matrix_Translate(position.x, position.y, position.z)
+                    * Matrix_Scale(x_Scale, y_Scale, z_Scale)
+                    * Matrix_Rotate_X(this->x_Rotation)
+                    * Matrix_Rotate_Y(this->y_Rotation)
+                    * Matrix_Rotate_Z(this->z_Rotation);
     }
 
     glm::vec4 getPos() const { return glm::vec4(position.x, position.y, position.z, 1.0f); }
+
 
     void init() override
     {
@@ -82,26 +86,34 @@ public:
 
     void update() override
     {
-        position.x += moving * velocity.x * Game::dt;
-        position.y += moving * velocity.y * Game::dt;
-        position.z += moving * velocity.z * Game::dt;
+        position.x += velocity.x * Game::dt;
+        position.y += velocity.y * Game::dt;
+        position.z += velocity.z * Game::dt;
+
+        if(entity->name == "player")
+        {
+            std::cout << "-----------------------\n";
+            std::cout << "pos: " << position << std::endl;
+            std::cout << "vel: " << velocity << std::endl;
+        }
 
         if(!fixed)
         {
-            if(position.y > 0)
-                velocity.y -= GRAV;
+            std::cout << "on air: " << onAir << std::endl;
+
+            /* Avoid falling into negative Y */
             if(position.y <= 0)
             {
                 onAir = false;
                 velocity.y = 0;
+                position.y = 0;
             }
+
+            /* Apply gravitational force */
+            if(position.y > 0)
+                velocity.y -= GRAV_FORCE * Game::dt;
         }
 
-        modelMatrix = Matrix_Identity()
-                    * Matrix_Translate(position.x, position.y, position.z)
-                    * Matrix_Scale(x_Scale, y_Scale, z_Scale)
-                    * Matrix_Rotate_X(this->x_Rotation)
-                    * Matrix_Rotate_Y(this->y_Rotation)
-                    * Matrix_Rotate_Z(this->z_Rotation);
+
     }
 };

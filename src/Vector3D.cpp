@@ -104,6 +104,6 @@ Vector3D& Vector3D::Zero()
 
 std::ostream& operator<<(std::ostream& stream, const Vector3D& vec)
 {
-    stream << "(" << vec.x << "," << vec.y << "," << vec.y << ")";
+    stream << "(" << vec.x << "," << vec.y << "," << vec.z << ")";
     return stream;
 }

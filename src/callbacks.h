@@ -48,13 +48,15 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
+    float mouseSensitivity = 0.04f;
+
     if (g_LeftMouseButtonPressed)
     {
         float dx = xpos - g_LastCursorPosX;
         float dy = ypos - g_LastCursorPosY;
     
-        g_CameraTheta -= 0.01f*dx;
-        g_CameraPhi   += 0.01f*dy;
+        g_CameraTheta -= mouseSensitivity * dx;
+        g_CameraPhi   += mouseSensitivity * dy;
     
         float phimax = 3.141592f/2;
         float phimin = -phimax;
@@ -71,8 +73,8 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 
     if (g_RightMouseButtonPressed)
     {
-        float dx = xpos - g_LastCursorPosX;
-        float dy = ypos - g_LastCursorPosY;
+        // float dx = xpos - g_LastCursorPosX;
+        // float dy = ypos - g_LastCursorPosY;
     
         g_LastCursorPosX = xpos;
         g_LastCursorPosY = ypos;
@@ -80,8 +82,8 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 
     if (g_MiddleMouseButtonPressed)
     {
-        float dx = xpos - g_LastCursorPosX;
-        float dy = ypos - g_LastCursorPosY;
+        // float dx = xpos - g_LastCursorPosX;
+        // float dy = ypos - g_LastCursorPosY;
     
         g_LastCursorPosX = xpos;
         g_LastCursorPosY = ypos;
@@ -90,7 +92,7 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    g_CameraDistance -= 0.1f*yoffset;
+    g_CameraDistance -= 0.3f*yoffset;
 
     const float verysmallnumber = std::numeric_limits<float>::epsilon();
     if (g_CameraDistance < verysmallnumber)

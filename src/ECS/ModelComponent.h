@@ -5,6 +5,7 @@
 #include "../GLManager.h"
 #include <map>
 #include <vector>
+#include <glm/mat4x4.hpp>
 
 class ModelComponent : public Component
 {
@@ -43,7 +44,9 @@ public:
 
     void draw() override
     {
-        /* precisa setar as matrizes model, view, blablabla */
+        glm::mat4 modelTransf = entity->getComponent<TransformComponent>().getModelMatrix();
+        glUniformMatrix4fv(glManager->model_uniform, 1 , GL_FALSE , glm::value_ptr(modelTransf));
+
         glManager->drawObject(model);
     }
 };

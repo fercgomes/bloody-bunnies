@@ -3,15 +3,15 @@
 Game *game = nullptr;
 
 const char* gameName = "The Amazing FCG Game";
-const float screenRatio = 16.0f/9.0f;
-	const int resolution = 720;
+const int width = 800;
+const int height = 600;
 
 int main( int argc, char* args[] )
 {
 	double prevTime, thisTime;
 
 	game = new Game();
-	game->init(gameName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenRatio * resolution, resolution, false);
+	game->init(gameName, width, height);
 
 	prevTime = glfwGetTime();
 
