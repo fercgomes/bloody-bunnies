@@ -108,6 +108,12 @@ Object3D GLManager::generateObject3D(ObjModel* model)
         size_t first_index = indices.size();
         size_t num_triangles = model->shapes[shape].mesh.num_face_vertices.size();
 
+        const float minval = std::numeric_limits<float>::min();
+        const float maxval = std::numeric_limits<float>::max();
+
+        glm::vec3 bbox_min = glm::vec3(maxval,maxval,maxval);
+        glm::vec3 bbox_max = glm::vec3(minval,minval,minval);
+
         for (size_t triangle = 0; triangle < num_triangles; ++triangle)
         {
             assert(model->shapes[shape].mesh.num_face_vertices[triangle] == 3);
@@ -126,6 +132,13 @@ Object3D GLManager::generateObject3D(ObjModel* model)
                 model_coefficients.push_back( vy ); // Y
                 model_coefficients.push_back( vz ); // Z
                 model_coefficients.push_back( 1.0f ); // W
+
+                bbox_min.x = std::min(bbox_min.x, vx);
+                bbox_min.y = std::min(bbox_min.y, vy);
+                bbox_min.z = std::min(bbox_min.z, vz);
+                bbox_max.x = std::max(bbox_max.x, vx);
+                bbox_max.y = std::max(bbox_max.y, vy);
+                bbox_max.z = std::max(bbox_max.z, vz);
 
                 // Inspecionando o código da tinyobjloader, o aluno Bernardo
                 // Sulzbach (2017/1) apontou que a maneira correta de testar se
@@ -155,7 +168,13 @@ Object3D GLManager::generateObject3D(ObjModel* model)
 
         size_t last_index = indices.size() - 1;
 
-        theobject = Object3D(model->shapes[shape].name, (void*)first_index, last_index - first_index + 1, GL_TRIANGLES, vertex_array_object_id);
+        theobject = Object3D(model->shapes[shape].name,
+                            (void*)first_index,
+                            last_index - first_index + 1,
+                            GL_TRIANGLES,
+                            vertex_array_object_id,
+                            bbox_min,
+                            bbox_max);
     }
 
     GLuint VBO_model_coefficients_id;
@@ -217,12 +236,19 @@ Object3D GLManager::generateObject3D(ObjModel* model)
 void GLManager::drawObject(Object3D& model)
 {
     glBindVertexArray(model.vertex_array_object_id);
+
+    glm::vec3 bbox_min = model.bbox_min;
+    glm::vec3 bbox_max = model.bbox_max;
+    glUniform4f(bbox_min_uniform, bbox_min.x, bbox_min.y, bbox_min.z, 1.0f);
+    glUniform4f(bbox_max_uniform, bbox_max.x, bbox_max.y, bbox_max.z, 1.0f);
+
     glDrawElements(
         model.rendering_mode,
         model.num_indices,
         GL_UNSIGNED_INT,
         (void*)model.first_index
     );
+
     glBindVertexArray(0);
 }
 
@@ -236,7 +262,7 @@ void GLManager::LoadShadersFromFiles()
     auto fragment_shader_id = LoadShader_Fragment(defaultFragment);
 
     auto program_id = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
-    shaders.emplace(std::pair<std::string, GLuint>("defaultShader", program_id));
+    shaders.emplace(std::pair<std::string, GLuint>("default", program_id));
 
     // Buscamos o endereço das variáveis definidas dentro do Vertex Shader.
     // Utilizaremos estas variáveis para enviar dados para a placa de vídeo
@@ -396,6 +422,14 @@ GLManager::GLManager(const char* vertexShader, const char* fragmentShader)
     LoadShadersFromFiles();
 }
 
+GLManager::GLManager()
+{
+    LoadShadersFromFiles();
+
+    bbox_min_uniform        = glGetUniformLocation(shaders["default"], "bbox_min");
+    bbox_max_uniform        = glGetUniformLocation(shaders["default"], "bbox_max");
+}
+
 void GLManager::setActiveShader(std::string shaderName)
 {
     if(shaderName.empty())
@@ -408,218 +442,60 @@ void GLManager::setActiveShader(std::string shaderName)
     }
 }
 
-
-void GLManager::TextRendering_LoadShader(const GLchar* const shader_string, GLuint shader_id)
+GLuint GLManager::LoadTextureImage(const char* filename)
 {
-    // Define o código do shader, contido na string "shader_string"
-    glShaderSource(shader_id, 1, &shader_string, NULL);
+    printf("Carregando imagem \"%s\"... ", filename);
 
-    // Compila o código do shader (em tempo de execução)
-    glCompileShader(shader_id);
+    // Primeiro fazemos a leitura da imagem do disco
+    stbi_set_flip_vertically_on_load(true);
+    int width;
+    int height;
+    int channels;
+    unsigned char *data = stbi_load(filename, &width, &height, &channels, 3);
 
-    // Verificamos se ocorreu algum erro ou "warning" durante a compilação
-    GLint compiled_ok;
-    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled_ok);
-
-    GLint log_length = 0;
-    glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
-
-    // Alocamos memória para guardar o log de compilação.
-    // A chamada "new" em C++ é equivalente ao "malloc()" do C.
-    GLchar* log = new GLchar[log_length];
-    glGetShaderInfoLog(shader_id, log_length, &log_length, log);
-
-    // Imprime no terminal qualquer erro ou "warning" de compilação
-    if ( log_length != 0 )
+    if ( data == NULL )
     {
-        std::string  output;
-
-        if ( !compiled_ok )
-        {
-            output += "ERROR: OpenGL compilation failed.\n";
-            output += "== Start of compilation log\n";
-            output += log;
-            output += "== End of compilation log\n";
-        }
-        else
-        {
-            output += "ERROR: OpenGL compilation failed.\n";
-            output += "== Start of compilation log\n";
-            output += log;
-            output += "== End of compilation log\n";
-        }
-
-        fprintf(stderr, "%s", output.c_str());
+        fprintf(stderr, "ERROR: Cannot open image file \"%s\".\n", filename);
+        std::exit(EXIT_FAILURE);
     }
 
-    // A chamada "delete" em C++ é equivalente ao "free()" do C
-    delete [] log;
-}
+    printf("OK (%dx%d).\n", width, height);
 
-void GLManager::TextRendering_Init()
-{
-    GLuint sampler;
 
-    glGenBuffers(1, &textVBO);
-    glGenVertexArrays(1, &textVAO);
-    glGenTextures(1, &texttexture_id);
-    glGenSamplers(1, &sampler);
-    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // glCheckError();
+    // Agora criamos objetos na GPU com OpenGL para armazenar a textura
+    GLuint texture_id;
+    GLuint sampler_id;
+    glGenTextures(1, &texture_id);
+    glGenSamplers(1, &sampler_id);
 
-    GLuint textvertexshader_id = glCreateShader(GL_VERTEX_SHADER);
-    TextRendering_LoadShader(textvertexshader_source, textvertexshader_id);
-    // glCheckError();
+    // Veja slide 100 do documento "Aula_20_e_21_Mapeamento_de_Texturas.pdf"
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    GLuint textfragmentshader_id = glCreateShader(GL_FRAGMENT_SHADER);
-    TextRendering_LoadShader(textfragmentshader_source, textfragmentshader_id);
-    // glCheckError();
+    // Parâmetros de amostragem da textura. Falaremos sobre eles em uma próxima aula.
+    glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    textprogram_id = CreateGpuProgram(textvertexshader_id, textfragmentshader_id);
-    glLinkProgram(textprogram_id);
-    // glCheckError();
+    // Agora enviamos a imagem lida do disco para a GPU
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 
-    GLuint texttex_uniform;
-    texttex_uniform = glGetUniformLocation(textprogram_id, "tex");
-    // glCheckError();
+    GLuint textureunit = loadedTextures;
 
-    GLuint textureunit = 31;
+    /* Select active texture unit */
     glActiveTexture(GL_TEXTURE0 + textureunit);
-    glBindTexture(GL_TEXTURE_2D, texttexture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, dejavufont.tex_width, dejavufont.tex_height, 0, GL_RED, GL_UNSIGNED_BYTE, dejavufont.tex_data);
-    glBindSampler(textureunit, sampler);
-    // glCheckError();
 
-    glBindVertexArray(textVAO);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindSampler(textureunit, sampler_id);
 
-    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-    glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
-    // glCheckError();
+    stbi_image_free(data);
 
-    glUseProgram(textprogram_id);
-    glUniform1i(texttex_uniform, textureunit);
-    glUseProgram(0);
-    // glCheckError();
+    loadedTextures += 1;
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    // glCheckError();
-}
-
-float textscale = 1.5f;
-
-void GLManager::TextRendering_PrintString(GLFWwindow* window, const std::string &str, float x, float y, float scale = 1.0f)
-{
-    scale *= textscale;
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    float sx = scale / width;
-    float sy = scale / height;
-
-    for (size_t i = 0; i < str.size(); i++)
-    {
-        // Find the glyph for the character we are looking for
-        texture_glyph_t *glyph = 0;
-        for (size_t j = 0; j < dejavufont.glyphs_count; ++j)
-        {
-            if (dejavufont.glyphs[j].codepoint == (uint32_t)str[i])
-            {
-                glyph = &dejavufont.glyphs[j];
-                break;
-            }
-        }
-        if (!glyph) {
-            continue;
-        }
-        x += glyph->kerning[0].kerning;
-        float x0 = (float) (x + glyph->offset_x * sx);
-        float y0 = (float) (y + glyph->offset_y * sy);
-        float x1 = (float) (x0 + glyph->width * sx);
-        float y1 = (float) (y0 - glyph->height * sy);
-
-        float s0 = glyph->s0 - 0.5f/dejavufont.tex_width;
-        float t0 = glyph->t0 - 0.5f/dejavufont.tex_height;
-        float s1 = glyph->s1 - 0.5f/dejavufont.tex_width;
-        float t1 = glyph->t1 - 0.5f/dejavufont.tex_height;
-
-        struct {float x, y, s, t;} data[6] = {
-            { x0, y0, s0, t0 },
-            { x0, y1, s0, t1 },
-            { x1, y1, s1, t1 },
-            { x0, y0, s0, t0 },
-            { x1, y1, s1, t1 },
-            { x1, y0, s1, t0 }
-        };
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glDepthFunc(GL_ALWAYS);
-        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, 24 * sizeof(float), data);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glUseProgram(textprogram_id);
-        glBindVertexArray(textVAO);
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        glBindVertexArray(0);
-        glUseProgram(0);
-        glDepthFunc(GL_LESS);
-
-        glDisable(GL_BLEND);
-
-        x += (glyph->advance_x * sx);
-    }
-}
-
-float GLManager::TextRendering_LineHeight(GLFWwindow* window)
-{
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    return dejavufont.height / height * textscale;
-}
-
-float GLManager::TextRendering_CharWidth(GLFWwindow* window)
-{
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    return dejavufont.glyphs[32].advance_x / width * textscale;
-}
-
-void GLManager::TextRendering_PrintMatrix(GLFWwindow* window, glm::mat4 M, float x, float y, float scale = 1.0f)
-{
-    char buffer[40];
-    float lineheight = TextRendering_LineHeight(window) * scale;
-
-    snprintf(buffer, 40, "[%+0.2f %+0.2f %+0.2f %+0.2f]", M[0][0], M[1][0], M[2][0], M[3][0]);
-    TextRendering_PrintString(window, buffer, x, y, scale);
-    snprintf(buffer, 40, "[%+0.2f %+0.2f %+0.2f %+0.2f]", M[0][1], M[1][1], M[2][1], M[3][1]);
-    TextRendering_PrintString(window, buffer, x, y - lineheight, scale);
-    snprintf(buffer, 40, "[%+0.2f %+0.2f %+0.2f %+0.2f]", M[0][2], M[1][2], M[2][2], M[3][2]);
-    TextRendering_PrintString(window, buffer, x, y - 2*lineheight, scale);
-    snprintf(buffer, 40, "[%+0.2f %+0.2f %+0.2f %+0.2f]", M[0][3], M[1][3], M[2][3], M[3][3]);
-    TextRendering_PrintString(window, buffer, x, y - 3*lineheight, scale);
-}
-
-void GLManager::TextRendering_PrintVector(GLFWwindow* window, glm::vec4 v, float x, float y, float scale = 1.0f)
-{
-    char buffer[10];
-    float lineheight = TextRendering_LineHeight(window) * scale;
-
-    snprintf(buffer, 10, "[%+0.2f]", v.x);
-    TextRendering_PrintString(window, buffer, x, y, scale);
-    snprintf(buffer, 10, "[%+0.2f]", v.y);
-    TextRendering_PrintString(window, buffer, x, y - lineheight, scale);
-    snprintf(buffer, 10, "[%+0.2f]", v.z);
-    TextRendering_PrintString(window, buffer, x, y - 2*lineheight, scale);
-    snprintf(buffer, 10, "[%+0.2f]", v.w);
-    TextRendering_PrintString(window, buffer, x, y - 3*lineheight, scale);
+    std::cout << "returning " << textureunit << std::endl;
+    return textureunit;
 }

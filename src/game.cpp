@@ -84,11 +84,11 @@ void Game::init(const char* title, int width, int height)
     glManager = new GLManager("../src/shader_vertex.glsl", "../src/shader_fragment.glsl");
     camera = new Camera();
 
-    /* Load text rendering */
-    glManager->TextRendering_Init();
+    glManager->setActiveShader("default");
 
     testEntity.addComponent<TransformComponent>(0.001f, 0.002f, 0.001f);
     testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "defaultShader");
+    testEntity.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     testEntity.addComponent<KeyboardController>(camera);
     testEntity.name = "player";
     testEntity.addGroup(testGroup);
@@ -106,7 +106,11 @@ void Game::init(const char* title, int width, int height)
 
     /* AI test */
     AITest.addComponent<TransformComponent>(1.0f, 0.002f, 0.001f);
-    AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "defaultShader");
+    AITest.getComponent<TransformComponent>().setStuff(-1.6f, 0.0f, 0.0f, 0.4f, 0.4f, 0.4f);
+    // AITest.getComponent<TransformComponent>().yOffset = 1.0f;
+    AITest.addComponent<ModelComponent>("../data/mafiaguy/mafia.obj", glManager, "defaultShader");
+    AITest.getComponent<ModelComponent>().loadTexture("../data/mafiaguy/Material.006 Diffuse Color.001.png");
+    AITest.getComponent<ModelComponent>().mappingType = 3;
     AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
     AITest.name = "AI test";
     AITest.addGroup(testGroup);
@@ -114,6 +118,8 @@ void Game::init(const char* title, int width, int height)
     /* Camera set-up */
     camera->bindEntity(&testEntity);
     camera->setCameraMode(lookAtEntityAndFollow);
+
+    // glManager->LoadTextureImage("../data/tc-earth_daymap_surface.jpg");      // TextureImage0
 }
 
 auto& tGroup(manager.getGroup(Game::testGroup));

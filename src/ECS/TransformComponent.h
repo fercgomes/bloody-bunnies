@@ -29,6 +29,10 @@ public:
     float y_Scale;
     float z_Scale;
 
+    float xOffset = 0.0f;
+    float yOffset = 0.0f;
+    float zOffset = 0.0f;
+
     float moving = 0.0f;
     float velAmount = 4.0f;
 
@@ -70,7 +74,7 @@ public:
     glm::mat4 getModelMatrix()
     {
         return        Matrix_Identity()
-                    * Matrix_Translate(position.x, position.y, position.z)
+                    * Matrix_Translate(position.x + xOffset, position.y + yOffset, position.z + zOffset)
                     * Matrix_Scale(x_Scale, y_Scale, z_Scale)
                     * Matrix_Rotate_X(this->x_Rotation)
                     * Matrix_Rotate_Y(this->y_Rotation)
@@ -90,16 +94,9 @@ public:
         position.y += velocity.y * Game::dt;
         position.z += velocity.z * Game::dt;
 
-        if(entity->name == "player")
-        {
-            std::cout << "-----------------------\n";
-            std::cout << "pos: " << position << std::endl;
-            std::cout << "vel: " << velocity << std::endl;
-        }
 
         if(!fixed)
         {
-            std::cout << "on air: " << onAir << std::endl;
 
             /* Avoid falling into negative Y */
             if(position.y <= 0)
