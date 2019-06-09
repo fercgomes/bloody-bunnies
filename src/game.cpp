@@ -19,6 +19,7 @@ float Game::screenRatio = 1.0f;
 
 auto& testEntity(manager.addEntity());
 auto& testEntity2(manager.addEntity());
+auto& AITest(manager.addEntity());
 
 Game::Game()
 {}
@@ -103,10 +104,16 @@ void Game::init(const char* title, int width, int height)
     testEntity2.name = "plant";
     testEntity2.addGroup(groupGrass);
 
+    /* AI test */
+    AITest.addComponent<TransformComponent>(1.0f, 0.002f, 0.001f);
+    AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "defaultShader");
+    AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
+    AITest.name = "AI test";
+    AITest.addGroup(testGroup);
+
+    /* Camera set-up */
     camera->bindEntity(&testEntity);
     camera->setCameraMode(lookAtEntityAndFollow);
-
-    // Audio::play("../420.wav");
 }
 
 auto& tGroup(manager.getGroup(Game::testGroup));
