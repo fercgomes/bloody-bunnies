@@ -1,7 +1,7 @@
 #include "Camera.h"
 #include "game.h"
 #include "ECS/Components.h"
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <sstream>
 #include <matrices.h>
@@ -59,6 +59,9 @@ void Game::init(const char* title, int width, int height)
     
     Game::isRunning = true;
 
+    glfwMakeContextCurrent(window);
+    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+
     glfwSetMouseButtonCallback(window, MouseButtonCallback);
     glfwSetCursorPosCallback(window, CursorPosCallback);
     glfwSetScrollCallback(window, ScrollCallback);
@@ -72,9 +75,6 @@ void Game::init(const char* title, int width, int height)
     const GLubyte *glslversion = glGetString(GL_SHADING_LANGUAGE_VERSION);
     printf("GPU: %s, %s, OpenGL %s, GLSL %s\n", vendor, renderer, glversion, glslversion);
 
-    /* TODO: glew manager */ 
-    glewExperimental = GL_TRUE;
-    glewInit();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

@@ -9,12 +9,9 @@ SOURCES = src/main.cpp src/game.cpp src/Camera.cpp src/GLManager.cpp src/Vector3
 OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS = -g -fpermissive -Wall -std=c++11 -I ./include/ 
 
-#LIB = `sdl2-config --libs`
-# LIB += -lSDL2_mixer -lGL -lGLEW -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
-LIB += -lGL -lGLEW -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
-#INC = `sdl2-config --cflags`
+LIB += -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
 
-$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS) build/glad.o
 	@echo " Linking..."
 	$(CC) $^ -o $(TARGET) $(LIB)
       
@@ -22,6 +19,9 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
 	@mkdir -p $(BUILDDIR)/ECS
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+
+build/glad.o: src/glad.c
+	$(CC) $(CFLAGS) $(INC) -c -o build/glad.o src/glad.c
  
 clean:
 	@echo " Cleaning.."
