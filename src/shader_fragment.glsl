@@ -66,7 +66,7 @@ void main()
     vec4 l = normalize(lightPos - origin);
     vec4 r = normalize(-l + 2*n*(dot(n, l)));
 
-    if ( mappingType == 0 )
+    if ( mappingType == 1 )
     {
         vec4 bbox_center = (bbox_min + bbox_max) / 2.0;
 
@@ -77,7 +77,7 @@ void main()
         U = (theta + M_PI) / (2 * M_PI);
         V = (phi + M_PI_2) / M_PI;
     }
-    else if ( mappingType == 1 )
+    else if ( mappingType == 0 )
     {
         float minx = bbox_min.x;
         float maxx = bbox_max.x;
@@ -90,9 +90,10 @@ void main()
 
         // (u, v) = (x, y) normalizado em [0, 1]
         U = (position_model.x - minx) / (maxx - minx);
-        V = (position_model.y - miny) / (maxy - miny);
+        // V = (position_model.y - miny) / (maxy - miny);
+        V = (position_model.z - minz) / (maxz - minz);
     }
-    else if ( mappingType == 3 )
+    else if ( mappingType == 2 )
     {
         U = texcoords.x;
         V = texcoords.y;

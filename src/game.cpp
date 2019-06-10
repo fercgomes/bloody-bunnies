@@ -20,6 +20,7 @@ float Game::screenRatio = 1.0f;
 auto& testEntity(manager.addEntity());
 auto& testEntity2(manager.addEntity());
 auto& AITest(manager.addEntity());
+auto& Terrain(manager.addEntity());
 
 Game::Game()
 {}
@@ -86,34 +87,29 @@ void Game::init(const char* title, int width, int height)
 
     glManager->setActiveShader("default");
 
+    testEntity.name = "player";
     testEntity.addComponent<TransformComponent>(0.001f, 0.002f, 0.001f);
-    testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "defaultShader");
+    testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
     testEntity.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     testEntity.addComponent<KeyboardController>(camera);
-    testEntity.name = "player";
     testEntity.addGroup(testGroup);
 
-    testEntity.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-
-    TransformComponent transf = testEntity.getComponent<TransformComponent>();
-    transf.setStuff(-PI/2.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f);
-
-    testEntity2.addComponent<TransformComponent>(0.0f, 0.0f, 0.0f);
-    testEntity2.getComponent<TransformComponent>().fixed = true;
-    testEntity2.addComponent<ModelComponent>("../plant.obj", glManager, "defaultShader");
-    testEntity2.name = "plant";
-    testEntity2.addGroup(groupGrass);
-
     /* AI test */
-    AITest.addComponent<TransformComponent>(1.0f, 0.002f, 0.001f);
-    AITest.getComponent<TransformComponent>().setStuff(-1.6f, 0.0f, 0.0f, 0.4f, 0.4f, 0.4f);
-    // AITest.getComponent<TransformComponent>().yOffset = 1.0f;
-    AITest.addComponent<ModelComponent>("../data/mafiaguy/mafia.obj", glManager, "defaultShader");
-    AITest.getComponent<ModelComponent>().loadTexture("../data/mafiaguy/Material.006 Diffuse Color.001.png");
-    AITest.getComponent<ModelComponent>().mappingType = 3;
-    AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
     AITest.name = "AI test";
+    AITest.addComponent<TransformComponent>(1.0f, 0.002f, 0.001f);
+    AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
+    AITest.getComponent<ModelComponent>().loadTexture("../data/mafiaguy/Material.006 Diffuse Color.001.png");
+    AITest.getComponent<ModelComponent>().mappingType = 0;
+    AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
     AITest.addGroup(testGroup);
+
+    Terrain.name = "terrain";
+    Terrain.addComponent<TransformComponent>();
+    Terrain.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 50.0f, 50.0f, 50.0f);
+    Terrain.addComponent<ModelComponent>("../data/grass/grass.obj", glManager, "default");
+    Terrain.getComponent<ModelComponent>().loadTexture("../data/grass/grass.png");
+    Terrain.getComponent<ModelComponent>().mappingType = 2;
+    Terrain.addGroup(mapGroup);
 
     /* Camera set-up */
     camera->bindEntity(&testEntity);
@@ -122,8 +118,6 @@ void Game::init(const char* title, int width, int height)
     // glManager->LoadTextureImage("../data/tc-earth_daymap_surface.jpg");      // TextureImage0
 }
 
-auto& tGroup(manager.getGroup(Game::testGroup));
-auto& tGrass(manager.getGroup(Game::groupGrass));
 
 void Game::handleEvents()
 {
@@ -187,6 +181,10 @@ void Game::handleEvents()
     }
 }
 
+auto& tGroup(manager.getGroup(Game::testGroup));
+auto& tGrass(manager.getGroup(Game::groupGrass));
+auto& tMap(manager.getGroup(Game::mapGroup));
+
 void Game::update()
 {
     manager.refresh();
@@ -212,15 +210,14 @@ void Game::render()
     glUniformMatrix4fv(glManager->view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
     glUniformMatrix4fv(glManager->projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
-    for(auto& t : tGroup)
-    {
+    for(auto& t : tMap)
         t->draw();
-    }
+
+    for(auto& t : tGroup)
+        t->draw();
 
     for(auto& t : tGrass)
-    {
         t->draw();
-    }
 
     glfwSwapBuffers(window);
 }

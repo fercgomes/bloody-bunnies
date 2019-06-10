@@ -26,7 +26,8 @@ public:
     enum groupLabels : std::size_t
     {
         testGroup,
-        groupGrass
+        groupGrass,
+        mapGroup
         // groupMap,
         // groupPlayers,
         // groupColliders,

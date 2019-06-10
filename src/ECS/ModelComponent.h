@@ -6,8 +6,8 @@
 #include <vector>
 #include <glm/mat4x4.hpp>
 
-#define PLANAR_PROJECTION 0
-#define SPHERICAL_PROJECTION 1
+#define PLANAR_PROJECTION 1
+#define SPHERICAL_PROJECTION 0
 #define TEXCOORD_PROJECTION 2
 
 class ModelComponent : public Component
@@ -43,7 +43,18 @@ public:
 
     void init() override
     {
-        entity->getComponent<TransformComponent>().yOffset = model.bbox_min.y;
+        std::cout << entity->name
+            << ": bbox_min = (" << model.bbox_min.x
+            << "," << model.bbox_min.y
+            << "," << model.bbox_min.z
+            << ")" << std::endl;
+        std::cout << entity->name
+            << ": bbox_max = (" << model.bbox_max.x
+            << "," << model.bbox_max.y
+            << "," << model.bbox_max.z
+            << ")" << std::endl;
+
+        entity->getComponent<TransformComponent>().yOffset = (float)std::abs(model.bbox_min.y);
     }
 
     void update() override
