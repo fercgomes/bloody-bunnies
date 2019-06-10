@@ -1,6 +1,5 @@
 #pragma once
 #include "Components.h"
-#include "SDL2/SDL.h"
 #include "../include/tiny_obj_loader.h"
 #include "../GLManager.h"
 #include <map>

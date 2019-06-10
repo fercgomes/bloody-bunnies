@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include "SDL2/SDL.h"
 #include "Components.h"
 #include <glm/vec4.hpp>
 
