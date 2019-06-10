@@ -69,14 +69,12 @@ void Camera::update()
 
     switch(cameraMode)
     {
-        case lookAtEntity:
-            lookAt = glm::vec4(entPos.x, entPos.y, entPos.z, 1.0f);
-            position = glm::vec4(x, y, z, 1.0f);
+        case FreeCamera:
+            lookAt = glm::vec4(x + position.x, y + position.y, z + position.z, 1.0f);
             break;
         
-        case lookAtEntityAndFollow:
+        case LookAt:
             lookAt = entPos;
-
             position = glm::vec4(x + entPos.x, y + entPos.y, z + entPos.z, 1.0f);
             break;
 
@@ -87,4 +85,48 @@ void Camera::update()
     /* Update view vector */
     viewVector = lookAt - position;
 
+}
+
+Camera::CameraMode Camera::getCameraMode()
+{
+    return cameraMode;
+}
+
+void Camera::stepForward()
+{
+    glm::vec4 dir = glm::normalize(viewVector);
+    position = position + step * dir;
+}
+
+void Camera::stepBackward()
+{
+    glm::vec4 dir = glm::normalize(viewVector);
+    position = position + step * (-dir);
+}
+
+void Camera::stepRight()
+{
+    glm::vec4 dir = glm::normalize(crossproduct(viewVector, upVector));
+    position = position + step * (dir);
+}
+
+void Camera::stepLeft()
+{
+    glm::vec4 dir = glm::normalize(crossproduct(viewVector, upVector));
+    position = position + step * (-dir);
+}
+
+
+void Camera::cycleMode()
+{
+    if(cameraMode == FreeCamera)
+    {
+        std::cout << "Switching camera to LookAt." << std::endl;
+        cameraMode = LookAt;
+    }
+    else if(cameraMode == LookAt)
+    {
+        std::cout << "Switching camera to FreeCamera." << std::endl;
+        cameraMode = FreeCamera;
+    }
 }

@@ -4,15 +4,38 @@
 
 class Entity;
 
-enum CameraMode
-{
-    lookAtEntity,
-    lookAtEntityAndFollow,
-    lookAtPosition
-};
-
 class Camera
 {
+public:
+    enum CameraMode
+    {
+        FreeCamera,
+        LookAt
+    };
+
+    glm::vec4 viewVector;
+
+    Camera();
+    Camera(glm::vec4 camPos, glm::vec4 lookAtPos);
+
+    void setCameraAngles(float distance, float theta, float phi);
+
+    glm::mat4 getViewMatrix();
+    glm::mat4 getProjectionMatrix();
+
+    bool bindEntity(Entity* ent);
+    void setCameraMode(CameraMode mode);
+    CameraMode getCameraMode();
+
+    void update();
+
+    void stepForward();
+    void stepBackward();
+    void stepRight();
+    void stepLeft();
+
+    void cycleMode();
+
 private:
     float theta = 0.0f; // Ângulo no plano ZX em relação ao eixo Z
     float phi = 0.0f;   // Ângulo em relação ao eixo Y
@@ -29,23 +52,9 @@ private:
     
     float field_of_view = 3.141592 / 3.0f;
 
+    float step = 0.5f;
+
     Entity* boundEntity = NULL;
 
     CameraMode cameraMode;
-public:
-
-    glm::vec4 viewVector;
-
-    Camera();
-    Camera(glm::vec4 camPos, glm::vec4 lookAtPos);
-
-    void setCameraAngles(float distance, float theta, float phi);
-
-    glm::mat4 getViewMatrix();
-    glm::mat4 getProjectionMatrix();
-
-    bool bindEntity(Entity* ent);
-    void setCameraMode(CameraMode mode);
-
-    void update();
 };

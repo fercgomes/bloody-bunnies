@@ -117,7 +117,7 @@ void Game::init(const char* title, int width, int height)
 
     /* Camera set-up */
     camera->bindEntity(&testEntity);
-    camera->setCameraMode(lookAtEntityAndFollow);
+    camera->setCameraMode(Camera::FreeCamera);
 
     // glManager->LoadTextureImage("../data/tc-earth_daymap_surface.jpg");      // TextureImage0
 }
@@ -129,37 +129,62 @@ void Game::handleEvents()
 {
     glfwPollEvents();
     
+    int state;
     /* TODO: key manager */
 
-    auto player = &testEntity.getComponent<KeyboardController>();
-
-    int state = glfwGetKey(window, GLFW_KEY_W);
+    state = glfwGetKey(window, GLFW_KEY_F5);
     if(state == GLFW_PRESS)
-       player->goingForward = true;
-    else if(state == GLFW_RELEASE)
-        player->goingForward = false;
+        camera->cycleMode();
 
-    state = glfwGetKey(window, GLFW_KEY_S);
-    if(state == GLFW_PRESS)
-       player->goingBackwards = true;
-    else if(state == GLFW_RELEASE)
-        player->goingBackwards = false;
+    if(camera->getCameraMode() == Camera::LookAt)
+    {
+        auto player = &testEntity.getComponent<KeyboardController>();
+        state = glfwGetKey(window, GLFW_KEY_W);
+        if(state == GLFW_PRESS)
+            player->goingForward = true;
+        else if(state == GLFW_RELEASE)
+            player->goingForward = false;
 
-    state = glfwGetKey(window, GLFW_KEY_D);
-    if(state == GLFW_PRESS)
-       player->goingRight = true;
-    else if(state == GLFW_RELEASE)
-        player->goingRight = false;
+        state = glfwGetKey(window, GLFW_KEY_S);
+        if(state == GLFW_PRESS)
+            player->goingBackwards = true;
+        else if(state == GLFW_RELEASE)
+            player->goingBackwards = false;
 
-    state = glfwGetKey(window, GLFW_KEY_A);
-    if(state == GLFW_PRESS)
-       player->goingLeft = true;
-    else if(state == GLFW_RELEASE)
-        player->goingLeft = false;
+        state = glfwGetKey(window, GLFW_KEY_D);
+        if(state == GLFW_PRESS)
+            player->goingRight = true;
+        else if(state == GLFW_RELEASE)
+            player->goingRight = false;
 
-    state = glfwGetKey(window, GLFW_KEY_SPACE);
-    if(state == GLFW_PRESS)
-        player->jump = true;
+        state = glfwGetKey(window, GLFW_KEY_A);
+        if(state == GLFW_PRESS)
+            player->goingLeft = true;
+        else if(state == GLFW_RELEASE)
+            player->goingLeft = false;
+
+        state = glfwGetKey(window, GLFW_KEY_SPACE);
+        if(state == GLFW_PRESS)
+            player->jump = true;
+    }
+    else if(camera->getCameraMode() == Camera::FreeCamera)
+    {
+        int state = glfwGetKey(window, GLFW_KEY_W);
+        if(state == GLFW_PRESS)
+            camera->stepForward();
+
+        state = glfwGetKey(window, GLFW_KEY_S);
+        if(state == GLFW_PRESS)
+            camera->stepBackward();
+
+        state = glfwGetKey(window, GLFW_KEY_D);
+        if(state == GLFW_PRESS)
+            camera->stepRight();
+
+        state = glfwGetKey(window, GLFW_KEY_A);
+        if(state == GLFW_PRESS)
+            camera->stepLeft();
+    }
 }
 
 void Game::update()
