@@ -117,7 +117,7 @@ void Game::init(const char* title, int width, int height)
 
     /* Camera set-up */
     camera->bindEntity(&testEntity);
-    camera->setCameraMode(Camera::FreeCamera);
+    camera->setCameraMode(Camera::LookAt);
 
     // glManager->LoadTextureImage("../data/tc-earth_daymap_surface.jpg");      // TextureImage0
 }

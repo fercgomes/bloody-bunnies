@@ -1,45 +1,30 @@
 #version 330 core
 
-// Atributos de fragmentos recebidos como entrada ("in") pelo Fragment Shader.
-// Neste exemplo, este atributo foi gerado pelo rasterizador como a
-// interpolação da posição global e a normal de cada vértice, definidas em
-// "shader_vertex.glsl" e "main.cpp".
 in vec4 position_world;
 in vec4 normal;
-
-// Posição do vértice atual no sistema de coordenadas local do modelo.
 in vec4 position_model;
 
-// Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
 in vec2 texcoords;
 
-// Matrizes computadas no código C++ e enviadas para a GPU
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-// Identificador que define qual objeto está sendo desenhado no momento
 #define PLANAR_PROJECTION 0 
 #define SPHERICAL_PROJECTION  1
 #define TEXCOORD_PROJECTION  2
+
 uniform int object_id;
 uniform int hasTexture;
 uniform int mappingType;
 
-// Parâmetros da axis-aligned bounding box (AABB) do modelo
 uniform vec4 bbox_min;
 uniform vec4 bbox_max;
 
-// Variáveis para acesso das imagens de textura
-uniform sampler2D TextureImage0;
-uniform sampler2D TextureImage1;
-uniform sampler2D TextureImage2;
 uniform sampler2D tex;
 
-// O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec3 color;
 
-// Constantes
 #define M_PI   3.14159265358979323846
 #define M_PI_2 1.57079632679489661923
 
@@ -61,15 +46,25 @@ void main()
     // normais de cada vértice.
     vec4 n = normalize(normal);
 
-    // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(1.0,1.0,0.0,0.0));
-
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
 
     // Coordenadas de textura U e V
     float U = 0.0;
     float V = 0.0;
+
+
+    /* Iluminação */
+
+    /* Espectro da fonte de iluminação */
+    vec3 I = vec3(1.0, 1.0, 1.0);
+    /* Espectro da luz ambiente */
+    vec3 Ia = vec3(0.2, 0.2, 0.2);
+
+    vec4 lightPos = vec4(0.0, 2.0, 1.0, 1.0);
+    vec4 lightDir = vec4(0.0, -1.0, 0.0, 0.0);
+    vec4 l = normalize(lightPos - origin);
+    vec4 r = normalize(-l + 2*n*(dot(n, l)));
 
     if ( mappingType == 0 )
     {
@@ -103,17 +98,26 @@ void main()
         V = texcoords.y;
     }
 
-    vec3 Kd0;
+    /* Refletância difusa */
+    vec3 Kd0 = vec3(0.0, 0.0, 0.0);
+    /* Refletancia especular */
+    vec3 Ks = vec3(0.3, 0.3, 0.4);
+    /* Refletancia ambiente */
+    vec3 Ka = vec3(0.4, 0.4, 0.4);
+    /* q */
+    float q = 20.0;
+
+
     if(hasTexture == 1)
         Kd0 = texture(tex, vec2(U,V)).rgb;
-    else
-        Kd0 = vec3(0.0, 0.0, 0.0);
+
 
     // Equação de Iluminação
-    float lambert = max(0,dot(n,l));
-    float lambert2 = max(0,dot(n,-l));
+    vec3 lambert_diffuse = Kd0 * I * max(0,dot(n,l));
+    vec3 ambient = Ka * Ia;
+    vec3 phong = Ks * I * pow(max(0, dot(r, v)), q);
 
-    color = Kd0 * (lambert + 0.01);
+    color = lambert_diffuse + ambient + phong;
 
     color = pow(color, vec3(1.0,1.0,1.0)/2.2);
 } 
