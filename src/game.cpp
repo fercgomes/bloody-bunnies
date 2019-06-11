@@ -98,8 +98,7 @@ void Game::init(const char* title, int width, int height)
     AITest.name = "AI test";
     AITest.addComponent<TransformComponent>(1.0f, 0.002f, 0.001f);
     AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
-    AITest.getComponent<ModelComponent>().loadTexture("../data/mafiaguy/Material.006 Diffuse Color.001.png");
-    AITest.getComponent<ModelComponent>().mappingType = 0;
+    AITest.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
     AITest.addGroup(testGroup);
 
