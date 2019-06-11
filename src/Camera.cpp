@@ -54,7 +54,20 @@ bool Camera::bindEntity(Entity* ent)
 
 void Camera::setCameraMode(CameraMode mode)
 {
-    std::cout << "Switching camera mode." << std::endl;
+    std::cout << "Switching camera mode to: ";
+    switch(mode)
+    {
+        case LookAt:
+            std::cout << "LookAt" << std::endl;
+            break;
+        case FreeCamera:
+            std::cout << "FreeCamera" << std::endl;
+            break;
+        case FirstPerson:
+            std::cout << "FirstPerson" << std::endl;
+            break;
+    }
+
     cameraMode = mode;
 }
 
@@ -76,6 +89,29 @@ void Camera::update()
         case LookAt:
             lookAt = entPos;
             position = glm::vec4(x + entPos.x, y + entPos.y, z + entPos.z, 1.0f);
+            break;
+
+        case FirstPerson:
+            auto& playerModel = boundEntity->getComponent<ModelComponent>();
+            auto& playerTransf = boundEntity->getComponent<TransformComponent>();
+            glm::vec3 center = glm::vec3(
+                playerModel.model.bbox_max - playerModel.model.bbox_min
+            );
+
+            position = glm::vec4(
+                center.x + playerTransf.position.x,
+                center.y + playerTransf.position.y,
+                center.z + playerTransf.position.z,
+                1.0f
+                );
+
+            lookAt = glm::vec4(
+                x + playerTransf.position.x,
+                y + playerTransf.position.y,
+                z + playerTransf.position.z,
+                1.0f
+                );
+
             break;
 
         default:
@@ -114,19 +150,4 @@ void Camera::stepLeft()
 {
     glm::vec4 dir = glm::normalize(crossproduct(viewVector, upVector));
     position = position + step * (-dir);
-}
-
-
-void Camera::cycleMode()
-{
-    if(cameraMode == FreeCamera)
-    {
-        std::cout << "Switching camera to LookAt." << std::endl;
-        cameraMode = LookAt;
-    }
-    else if(cameraMode == LookAt)
-    {
-        std::cout << "Switching camera to FreeCamera." << std::endl;
-        cameraMode = FreeCamera;
-    }
 }

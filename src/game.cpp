@@ -127,9 +127,27 @@ void Game::handleEvents()
 
     state = glfwGetKey(window, GLFW_KEY_F5);
     if(state == GLFW_PRESS)
-        camera->cycleMode();
+    {
+        camera->setCameraMode(Camera::LookAt);
+        testEntity.getComponent<ModelComponent>().show();
+    }
 
-    if(camera->getCameraMode() == Camera::LookAt)
+    state = glfwGetKey(window, GLFW_KEY_F6);
+    if(state == GLFW_PRESS)
+    {
+        camera->setCameraMode(Camera::FreeCamera);
+        testEntity.getComponent<ModelComponent>().show();
+    }
+
+    state = glfwGetKey(window, GLFW_KEY_F7);
+    if(state == GLFW_PRESS)
+    {
+        camera->setCameraMode(Camera::FirstPerson);
+        testEntity.getComponent<ModelComponent>().hide();
+    }
+
+    if(camera->getCameraMode() == Camera::LookAt ||
+       camera->getCameraMode() == Camera::FirstPerson)
     {
         auto player = &testEntity.getComponent<KeyboardController>();
         state = glfwGetKey(window, GLFW_KEY_W);

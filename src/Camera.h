@@ -10,7 +10,8 @@ public:
     enum CameraMode
     {
         FreeCamera,
-        LookAt
+        LookAt,
+        FirstPerson
     };
 
     glm::vec4 viewVector;
@@ -33,8 +34,6 @@ public:
     void stepBackward();
     void stepRight();
     void stepLeft();
-
-    void cycleMode();
 
 private:
     float theta = 0.0f; // Ângulo no plano ZX em relação ao eixo Z
