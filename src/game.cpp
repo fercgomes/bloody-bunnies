@@ -97,10 +97,15 @@ void Game::init(const char* title, int width, int height)
 
     /* AI test */
     AITest.name = "AI test";
-    AITest.addComponent<TransformComponent>(1.0f, 0.002f, 0.001f);
+    AITest.addComponent<TransformComponent>();
     AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
     AITest.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
-    AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
+    //AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
+	AITest.addComponent<BezierComponent>(5.0f,
+										glm::vec4(-10.0f, 0.0f, 0.0f, 1.0f),
+										glm::vec4(0.0f, 0.0f, 10.0f, 1.0f),
+										glm::vec4(10.0f, 0.0f, 0.0f, 1.0f)
+										);
     AITest.addGroup(testGroup);
 
     Terrain.name = "terrain";
@@ -152,6 +157,12 @@ void Game::handleEvents()
     {
         camera->setCameraMode(Camera::FirstPerson);
         testEntity.getComponent<ModelComponent>().hide();
+    }
+
+    state = glfwGetKey(window, GLFW_KEY_F9);
+    if(state == GLFW_PRESS)
+    {
+		AITest.getComponent<BezierComponent>().animate();
     }
 
     if(camera->getCameraMode() == Camera::LookAt ||

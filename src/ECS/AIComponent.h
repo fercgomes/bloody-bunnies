@@ -52,17 +52,18 @@ public:
             1.0f
         ));
 
-        float AISpeed = 1.0f;
+        float AISpeed = 2.0f;
 
         /* Ongoing action */
         if(actionDuration > 0.0f)
         {
-            float minDistance = 6.0f;
+            float minDistance = 20.0f;
 
             if(distanceToPlayer < minDistance)
             {
                 AITransform.velocity.x = AISpeed * toPlayer.x;
                 AITransform.velocity.z = AISpeed * toPlayer.z;
+		AITransform.y_Rotation = dot(toPlayer, glm::vec4(0.0f, 0.0f, 1.0f, 0.0f));
             }
             else
             {

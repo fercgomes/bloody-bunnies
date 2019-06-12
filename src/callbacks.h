@@ -59,7 +59,7 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         g_CameraPhi   += mouseSensitivity * dy;
     
         float phimax = 3.141592f/2;
-        float phimin = 0.01f;
+        float phimin = -1.6f;
     
         if (g_CameraPhi > phimax)
             g_CameraPhi = phimax;

@@ -18,6 +18,8 @@ public:
     Vector3D position;
     Vector3D velocity;
 
+	float torque = 1.0f;
+
     bool onAir = false;
     bool fixed = false;
 
@@ -94,6 +96,7 @@ public:
         position.y += velocity.y * Game::dt;
         position.z += velocity.z * Game::dt;
 
+		//y_Rotation += torque * Game::dt;
 
         if(!fixed)
         {
