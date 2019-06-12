@@ -18,8 +18,8 @@ public:
     void clean();
 
     bool running();
-    static bool isRunning;
 
+    static bool isRunning;
     static double dt;
     static float screenRatio;
 

@@ -47,7 +47,7 @@ private:
     glm::mat4 viewMatrix;
 
     float nearplane = -0.1f;
-    float farplane  = -40.0f;
+    float farplane  = -100.0f;
     
     float field_of_view = 3.141592 / 3.0f;
 

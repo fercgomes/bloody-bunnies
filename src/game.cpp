@@ -21,6 +21,7 @@ auto& testEntity(manager.addEntity());
 auto& testEntity2(manager.addEntity());
 auto& AITest(manager.addEntity());
 auto& Terrain(manager.addEntity());
+auto& house(manager.addEntity());
 
 Game::Game()
 {}
@@ -109,6 +110,13 @@ void Game::init(const char* title, int width, int height)
     Terrain.getComponent<ModelComponent>().loadTexture("../data/grass/grass.png");
     Terrain.getComponent<ModelComponent>().mappingType = 2;
     Terrain.addGroup(mapGroup);
+
+    house.addComponent<TransformComponent>();
+    house.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 0.1f, 0.1f, 0.1f);
+    house.addComponent<ModelComponent>("../data/house/house.obj", glManager, "default");
+    house.getComponent<ModelComponent>().loadTexture("../data/house/house.jpg");
+    house.getComponent<ModelComponent>().mappingType = 2;
+    house.addGroup(mapGroup);
 
     /* Camera set-up */
     camera->bindEntity(&testEntity);
