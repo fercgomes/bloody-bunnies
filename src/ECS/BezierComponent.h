@@ -41,23 +41,25 @@ public:
 		{
 			currentTime += Game::dt;
 
-			//Check collision
-			if(entity->hasComponent<ColliderComponent>()){
-                if(entity->getComponent<ColliderComponent>().isColliding()){
-                    running = false;
-                    currentTime = 0.0f;
-                    return;
-                }
-			}
-
 			if(currentTime <= duration)
 			{
 				auto& transf = entity->getComponent<TransformComponent>();
+				auto prevPos = transf.position;
 				auto newPos = getPosition();
 
 				transf.position.x = newPos.x;
 				transf.position.y = newPos.y;
 				transf.position.z = newPos.z;
+
+				//Check collision
+                if(entity->hasComponent<ColliderComponent>()){
+                    if(entity->getComponent<ColliderComponent>().isColliding()){
+                        transf.position = prevPos;
+                        running = false;
+                        currentTime = 0.0f;
+                        return;
+                    }
+                }
 			}
 			else
 			{

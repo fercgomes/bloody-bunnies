@@ -118,7 +118,7 @@ void Game::init(const char* title, int width, int height)
 
     box1.name = "box1";
     box1.addComponent<TransformComponent>(42.001f, 0.002f, 30.001f);
-    box1.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 0.1f, 0.1f, 0.1f);
+    //box1.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 1.0f, 0.1f, 0.1f);
     box1.addComponent<ModelComponent>("../data/miscObj/box.obj", glManager, "default");
     box1.getComponent<ModelComponent>().loadTexture("../data/miscObj/box_diffuse.jpg");
     box1.addComponent<ColliderComponent>("Box1Colider");
@@ -126,7 +126,7 @@ void Game::init(const char* title, int width, int height)
 
     box2.name = "box2";
     box2.addComponent<TransformComponent>(58.001f, 0.002f, 30.001f);
-    box2.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f);
+    box2.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f);
     box2.addComponent<ModelComponent>("../data/miscObj/box.obj", glManager, "default");
     box2.getComponent<ModelComponent>().loadTexture("../data/miscObj/box_diffuse.jpg");
     box2.addComponent<ColliderComponent>("Box2Colider");
