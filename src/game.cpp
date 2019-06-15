@@ -58,7 +58,7 @@ void Game::init(const char* title, int width, int height)
         fprintf(stderr, "ERROR: glfwCreateWindow() failed.\n");
         std::exit(EXIT_FAILURE);
     }
-    
+
     Game::isRunning = true;
 
     glfwMakeContextCurrent(window);
@@ -93,7 +93,9 @@ void Game::init(const char* title, int width, int height)
     testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
     testEntity.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     testEntity.addComponent<KeyboardController>(camera);
+    testEntity.addComponent<ColliderComponent>("colider");
     testEntity.addGroup(testGroup);
+
 
     /* AI test */
     AITest.name = "AI test";
@@ -101,12 +103,14 @@ void Game::init(const char* title, int width, int height)
     AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
     AITest.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     //AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
+    AITest.addComponent<ColliderComponent>("colider2");
 	AITest.addComponent<BezierComponent>(5.0f,
 										glm::vec4(-10.0f, 0.0f, 0.0f, 1.0f),
 										glm::vec4(0.0f, 0.0f, 10.0f, 1.0f),
 										glm::vec4(10.0f, 0.0f, 0.0f, 1.0f)
 										);
     AITest.addGroup(testGroup);
+
 
     Terrain.name = "terrain";
     Terrain.addComponent<TransformComponent>();
@@ -134,7 +138,7 @@ void Game::init(const char* title, int width, int height)
 void Game::handleEvents()
 {
     glfwPollEvents();
-    
+
     int state;
     /* TODO: key manager */
 
