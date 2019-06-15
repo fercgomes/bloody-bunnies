@@ -71,6 +71,8 @@ public:
         this->x_Scale = sX;
         this->y_Scale = sY;
         this->z_Scale = sZ;
+
+        this->yOffset = this->yOffset * sY;
     }
 
     glm::mat4 getModelMatrix()

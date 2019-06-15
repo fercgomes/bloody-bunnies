@@ -23,19 +23,6 @@ public:
     ColliderComponent(std::string t)
     {
         tag = t;
-
-        if(entity->hasComponent<ModelComponent>()){
-            ModelComponent& modelC = entity->getComponent<ModelComponent>();
-            this->boundingbox.minX = modelC.model.bbox_min.x;
-            this->boundingbox.minY = modelC.model.bbox_min.y;
-            this->boundingbox.minZ = modelC.model.bbox_min.z;
-            this->boundingbox.maxX = modelC.model.bbox_max.x;
-            this->boundingbox.maxY = modelC.model.bbox_max.y;
-            this->boundingbox.maxZ = modelC.model.bbox_max.z;
-            this->initializedBoundingBox = true;
-        }
-
-        else this->initializedBoundingBox = false;
     }
 
     ColliderComponent(std::string t, BoundingBox box)
@@ -61,12 +48,12 @@ public:
         if(!this->initializedBoundingBox){
             if(entity->hasComponent<ModelComponent>()){
                 ModelComponent& modelC = entity->getComponent<ModelComponent>();
-                this->boundingbox.minX = modelC.model.bbox_min.x;
-                this->boundingbox.minY = modelC.model.bbox_min.y;
-                this->boundingbox.minZ = modelC.model.bbox_min.z;
-                this->boundingbox.maxX = modelC.model.bbox_max.x;
-                this->boundingbox.maxY = modelC.model.bbox_max.y;
-                this->boundingbox.maxZ = modelC.model.bbox_max.z;
+                this->boundingbox.minX = modelC.model.bbox_min.x * transform->x_Scale + transform->xOffset;
+                this->boundingbox.minY = modelC.model.bbox_min.y * transform->y_Scale + transform->yOffset;
+                this->boundingbox.minZ = modelC.model.bbox_min.z * transform->z_Scale + transform->zOffset;
+                this->boundingbox.maxX = modelC.model.bbox_max.x * transform->x_Scale + transform->xOffset;
+                this->boundingbox.maxY = modelC.model.bbox_max.y * transform->y_Scale + transform->yOffset;
+                this->boundingbox.maxZ = modelC.model.bbox_max.z * transform->z_Scale + transform->zOffset;
                 this->initializedBoundingBox = true;
             }
             else{
@@ -83,13 +70,20 @@ public:
 
     void update() override
     {
+
+    }
+
+    bool isColliding(){
         auto& myGroup = entity->getManager().getGroup(0); //TODO: getGroup(0) is very dumb
 
         for(auto& e : myGroup){
-            if(e != entity && this->checkAgainst(*e))
+            if(e != entity && this->checkAgainst(*e)){
                 printf("%s collided with %s\n", entity->name.c_str(), e->name.c_str());
+                return true;
+            }
         }
 
+        return false;
     }
 
     //Checks if we are colliding with targetEntity

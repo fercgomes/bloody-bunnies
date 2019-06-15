@@ -1,4 +1,6 @@
 #include "../game.h"
+#include "Components.h"
+#include "ColliderComponent.h"
 
 class BezierComponent : public Component
 {
@@ -9,11 +11,11 @@ private:
 	float duration;
 
 	bool running = true;
-	
+
 public:
 	BezierComponent(float dur, glm::vec4 p2, glm::vec4 p3, glm::vec4 p4)
 	{
-		duration = dur;	
+		duration = dur;
 		this->p1 = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 		this->p2 = p2;
 		this->p3 = p3;
@@ -32,16 +34,25 @@ public:
 			p4_relative = p4 + entity->getComponent<TransformComponent>().getPos();
 		}
 	}
-	
+
 	void update() override
 	{
 		if(running)
 		{
-			currentTime += Game::dt;	
+			currentTime += Game::dt;
+
+			//Check collision
+			if(entity->hasComponent<ColliderComponent>()){
+                if(entity->getComponent<ColliderComponent>().isColliding()){
+                    running = false;
+                    currentTime = 0.0f;
+                    return;
+                }
+			}
 
 			if(currentTime <= duration)
 			{
-				auto& transf = entity->getComponent<TransformComponent>();		
+				auto& transf = entity->getComponent<TransformComponent>();
 				auto newPos = getPosition();
 
 				transf.position.x = newPos.x;
@@ -59,7 +70,7 @@ public:
 	glm::vec4 getPosition()
 	{
 		float t = currentTime / duration;
-		
+
 		glm::vec4 c12 = p1_relative + t * (p2_relative - p1_relative);
 		glm::vec4 c23 = p2_relative + t * (p3_relative - p2_relative);
 		glm::vec4 c34 = p3_relative + t * (p4_relative - p3_relative);

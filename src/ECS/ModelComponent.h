@@ -55,7 +55,8 @@ public:
             << "," << model.bbox_max.z
             << ")" << std::endl;
 
-        entity->getComponent<TransformComponent>().yOffset = (float)std::abs(model.bbox_min.y);
+        entity->getComponent<TransformComponent>().yOffset = -(model.bbox_min.y) * entity->getComponent<TransformComponent>().y_Scale;
+        //entity->getComponent<TransformComponent>().position.y += (float)-model.bbox_min.y;
     }
 
     void update() override
