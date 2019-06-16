@@ -10,6 +10,7 @@ typedef struct bbox{
 
 class TransformComponent;
 class ModelComponent;
+class AIComponent;
 class ColliderComponent : public Component
 {
 
@@ -51,6 +52,10 @@ public:
         for(auto& e : myGroup){
             if(e != entity && this->checkAgainst(*e)){
                 printf("%s collided with %s\n", entity->name.c_str(), e->name.c_str());
+                if(entity->name == "rock" && e->hasComponent<AIComponent>()){ //TODO: name == "rock" is also dumb
+                    entity->destroy();
+                    e->destroy();
+                }
                 return true;
             }
         }

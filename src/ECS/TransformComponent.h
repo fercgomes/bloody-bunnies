@@ -55,7 +55,7 @@ public:
     {
         position.x = x;
         position.y = y;
-        position.z = y;
+        position.z = z;
         x_Rotation = 0.0f;
         y_Rotation = 0.0f;
         z_Rotation = 0.0f;
