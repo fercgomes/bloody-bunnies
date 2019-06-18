@@ -10,7 +10,7 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-#define PLANAR_PROJECTION 0 
+#define PLANAR_PROJECTION 0
 #define SPHERICAL_PROJECTION  1
 #define TEXCOORD_PROJECTION  2
 
@@ -66,6 +66,9 @@ void main()
     vec4 l = normalize(lightPos - origin);
     vec4 r = normalize(-l + 2*n*(dot(n, l)));
 
+    //Vetor usado para iluminação de Blinn-Phong
+    vec4 h = normalize(l + v);
+
     if ( mappingType == 1 )
     {
         vec4 bbox_center = (bbox_min + bbox_max) / 2.0;
@@ -116,10 +119,11 @@ void main()
     // Equação de Iluminação
     vec3 lambert_diffuse = Kd0 * I * max(0,dot(n,l));
     vec3 ambient = Ka * Ia;
-    vec3 phong = Ks * I * pow(max(0, dot(r, v)), q);
+    //vec3 phong = Ks * I * pow(max(0, dot(r, v)), q);
+    vec3 blinnPhong = Ks * I * pow(max(0, dot(n, h)), q);
 
-    color = lambert_diffuse + ambient + phong;
+    color = lambert_diffuse + ambient + blinnPhong;
 
     color = pow(color, vec3(1.0,1.0,1.0)/2.2);
-} 
+}
 

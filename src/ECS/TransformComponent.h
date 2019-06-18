@@ -1,5 +1,6 @@
 #pragma once
 #include "Components.h"
+#include "ColliderComponent.h"
 #include <glm/vec4.hpp>
 #include "../Vector3D.h"
 #include <glm/mat4x4.hpp>
@@ -54,7 +55,7 @@ public:
     {
         position.x = x;
         position.y = y;
-        position.z = y;
+        position.z = z;
         x_Rotation = 0.0f;
         y_Rotation = 0.0f;
         z_Rotation = 0.0f;
@@ -71,6 +72,8 @@ public:
         this->x_Scale = sX;
         this->y_Scale = sY;
         this->z_Scale = sZ;
+
+        this->yOffset = this->yOffset * sY;
     }
 
     glm::mat4 getModelMatrix()
@@ -92,9 +95,21 @@ public:
 
     void update() override
     {
+
         position.x += velocity.x * Game::dt;
         position.y += velocity.y * Game::dt;
         position.z += velocity.z * Game::dt;
+
+        if(entity->hasComponent<ColliderComponent>() && entity->getComponent<ColliderComponent>().isColliding()){
+            onAir = false;
+            position.x -= velocity.x * Game::dt;
+            position.y -= velocity.y * Game::dt;
+            position.z -= velocity.z * Game::dt;
+            velocity.y = 0;
+            velocity.x = 0;
+            velocity.z = 0;
+            return;
+        }
 
 		//y_Rotation += torque * Game::dt;
 
@@ -110,8 +125,9 @@ public:
             }
 
             /* Apply gravitational force */
-            if(position.y > 0)
+            if(position.y > 0){
                 velocity.y -= GRAV_FORCE * Game::dt;
+            }
         }
 
 

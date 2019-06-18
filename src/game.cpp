@@ -7,6 +7,8 @@
 #include <matrices.h>
 #include "GLManager.h"
 
+#define THROW_ROCK_COOLDOWN 1.0f
+
 Manager manager;
 GLManager* glManager;
 Camera* camera;
@@ -15,6 +17,8 @@ bool Game::isRunning = false;
 double Game::dt = 0;
 float Game::screenRatio = 1.0f;
 
+double rockCooldown = 0.0f;
+
 #include "callbacks.h"
 
 auto& testEntity(manager.addEntity());
@@ -22,6 +26,9 @@ auto& testEntity2(manager.addEntity());
 auto& AITest(manager.addEntity());
 auto& Terrain(manager.addEntity());
 auto& house(manager.addEntity());
+
+auto& box1(manager.addEntity());
+auto& box2(manager.addEntity());
 
 Game::Game()
 {}
@@ -58,7 +65,7 @@ void Game::init(const char* title, int width, int height)
         fprintf(stderr, "ERROR: glfwCreateWindow() failed.\n");
         std::exit(EXIT_FAILURE);
     }
-    
+
     Game::isRunning = true;
 
     glfwMakeContextCurrent(window);
@@ -89,24 +96,45 @@ void Game::init(const char* title, int width, int height)
     glManager->setActiveShader("default");
 
     testEntity.name = "player";
-    testEntity.addComponent<TransformComponent>(0.001f, 0.002f, 0.001f);
+    testEntity.addComponent<TransformComponent>(26.001f, 0.002f, 24.001f);
+    testEntity.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f);
     testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
     testEntity.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     testEntity.addComponent<KeyboardController>(camera);
+    testEntity.addComponent<ColliderComponent>("colider");
     testEntity.addGroup(testGroup);
+
 
     /* AI test */
     AITest.name = "AI test";
-    AITest.addComponent<TransformComponent>();
+    AITest.addComponent<TransformComponent>(36.001f, 0.002f, 20.001f);
     AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
     AITest.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
-    //AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
-	AITest.addComponent<BezierComponent>(5.0f,
-										glm::vec4(-10.0f, 0.0f, 0.0f, 1.0f),
-										glm::vec4(0.0f, 0.0f, 10.0f, 1.0f),
-										glm::vec4(10.0f, 0.0f, 0.0f, 1.0f)
+    AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
+    AITest.addComponent<ColliderComponent>("colider2");
+	AITest.addComponent<BezierComponent>(2.0f,
+										glm::vec4(2.0f, 10.0f, 0.0f, 1.0f),
+										glm::vec4(10.0f, 10.0f, 0.0f, 1.0f),
+										glm::vec4(12.0f, 0.0f, 0.0f, 1.0f)
 										);
     AITest.addGroup(testGroup);
+
+
+    box1.name = "box1";
+    box1.addComponent<TransformComponent>(42.001f, 0.002f, 30.001f);
+    //box1.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 1.0f, 0.1f, 0.1f);
+    box1.addComponent<ModelComponent>("../data/miscObj/box.obj", glManager, "default");
+    box1.getComponent<ModelComponent>().loadTexture("../data/miscObj/box_diffuse.jpg");
+    box1.addComponent<ColliderComponent>("Box1Colider");
+    box1.addGroup(testGroup);
+
+    box2.name = "box2";
+    box2.addComponent<TransformComponent>(58.001f, 0.002f, 30.001f);
+    box2.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f);
+    box2.addComponent<ModelComponent>("../data/miscObj/box.obj", glManager, "default");
+    box2.getComponent<ModelComponent>().loadTexture("../data/miscObj/box_diffuse.jpg");
+    box2.addComponent<ColliderComponent>("Box2Colider");
+    box2.addGroup(testGroup);
 
     Terrain.name = "terrain";
     Terrain.addComponent<TransformComponent>();
@@ -128,13 +156,57 @@ void Game::init(const char* title, int width, int height)
     camera->setCameraMode(Camera::LookAt);
 
     // glManager->LoadTextureImage("../data/tc-earth_daymap_surface.jpg");      // TextureImage0
+
+    for(int i = 0; i < 6; i++)
+        addEnemy(-20.0f + 10.0f * i, 0.1f, -10.0f);
 }
 
+void Game::addEnemy(double x, double y, double z){
+    auto& newEnemy(manager.addEntity());
+    newEnemy.name = "Enemy";
+    newEnemy.addComponent<TransformComponent>(x, y, z);
+    newEnemy.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
+    newEnemy.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
+    newEnemy.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
+    newEnemy.addComponent<ColliderComponent>("EnemyCollider");
+	newEnemy.addComponent<BezierComponent>(2.0f,
+										glm::vec4(2.0f, 10.0f, 0.0f, 1.0f),
+										glm::vec4(10.0f, 10.0f, 0.0f, 1.0f),
+										glm::vec4(12.0f, 0.0f, 0.0f, 1.0f)
+										);
+    newEnemy.addGroup(testGroup);
+}
+
+void Game::throwRock(){
+    if(rockCooldown <= 0.0f){
+        auto& rock(manager.addEntity());
+        TransformComponent playerTransf = testEntity.getComponent<TransformComponent>();
+        glm::vec4 viewUnit = camera->viewVector / norm(camera->viewVector) * 2.0f * playerTransf.x_Scale;
+
+        rock.name = "rock";
+        rock.addComponent<TransformComponent>(playerTransf.getPos().x + playerTransf.xOffset + viewUnit.x, playerTransf.getPos().y + playerTransf.yOffset + viewUnit.y, playerTransf.getPos().z + playerTransf.zOffset + viewUnit.z);
+        rock.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 0.02f, 0.02f, 0.02f);
+        rock.addComponent<ModelComponent>("../data/miscObj/Rock.obj", glManager, "default");
+        //rock.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
+        rock.addComponent<ColliderComponent>("RockColider");
+        rock.addComponent<AutoKillComponent>(4.0f);
+        rock.addGroup(testGroup);
+
+        //TODO: ...No match for operator = ... Vector3D and glm::vec4...
+        rock.getComponent<TransformComponent>().velocity.x = camera->viewVector.x * 2.0f;
+        rock.getComponent<TransformComponent>().velocity.y = camera->viewVector.y * 2.0f;
+        rock.getComponent<TransformComponent>().velocity.z = camera->viewVector.z * 2.0f;
+
+        rockCooldown = THROW_ROCK_COOLDOWN;
+
+        printf("Player: \n%.2f %.2f %.2f\n", playerTransf.getPos().x + playerTransf.xOffset, playerTransf.getPos().y + playerTransf.yOffset, playerTransf.getPos().z + playerTransf.zOffset);
+    }
+}
 
 void Game::handleEvents()
 {
     glfwPollEvents();
-    
+
     int state;
     /* TODO: key manager */
 
@@ -196,6 +268,12 @@ void Game::handleEvents()
         state = glfwGetKey(window, GLFW_KEY_SPACE);
         if(state == GLFW_PRESS)
             player->jump = true;
+
+        //Throw rock
+        state = glfwGetKey(window, GLFW_KEY_E);
+        if(state == GLFW_PRESS)
+            this->throwRock();
+
     }
     else if(camera->getCameraMode() == Camera::FreeCamera)
     {
@@ -232,6 +310,8 @@ void Game::update()
     camera->update();
 
     Game::isRunning = !glfwWindowShouldClose(window);
+
+    rockCooldown -= this->dt;
 }
 
 

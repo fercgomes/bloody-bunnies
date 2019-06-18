@@ -57,7 +57,7 @@ public:
         /* Ongoing action */
         if(actionDuration > 0.0f)
         {
-            float minDistance = 20.0f;
+            float minDistance = 50.0f;
 
             if(distanceToPlayer < minDistance)
             {
@@ -70,7 +70,7 @@ public:
                 AITransform.velocity.x = 0.0f;
                 AITransform.velocity.z = 0.0f;
             }
-            
+
 
             actionDuration -= Game::dt;
         }
@@ -78,7 +78,7 @@ public:
         {
             actionDuration = randFloat(1.0f, 3.0f);
         }
-        
+
 
     }
 

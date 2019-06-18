@@ -49,7 +49,7 @@ public:
         /* If the player jumped is not already on air */
         if(jump && !transform->onAir)
         {
-            float jumpSpeed = 6.0f;
+            float jumpSpeed = 10.0f;
             newVelocity.y = jumpSpeed;
             transform->onAir = true;
         }

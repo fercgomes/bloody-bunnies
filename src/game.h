@@ -6,11 +6,14 @@
 
 class Game
 {
-public: 
+public:
     Game();
     ~Game();
 
     void init(const char* title, int width, int height);
+
+    void addEnemy(double x, double y, double z);
+    void throwRock();
 
     void handleEvents();
     void update();
