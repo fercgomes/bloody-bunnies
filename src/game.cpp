@@ -15,6 +15,7 @@ Camera* camera;
 
 bool Game::isRunning = false;
 double Game::dt = 0;
+int Game::playerAmmo = 0;
 float Game::screenRatio = 1.0f;
 
 double rockCooldown = 0.0f;
@@ -157,6 +158,11 @@ void Game::init(const char* title, int width, int height)
 
     // glManager->LoadTextureImage("../data/tc-earth_daymap_surface.jpg");      // TextureImage0
 
+    Game::playerAmmo = 0;
+
+    for(int i = 0; i < 10; i++)
+        addRockToPick(-30.0f + 8.0f * i, 0.1f, -17.0f);
+
     for(int i = 0; i < 6; i++)
         addEnemy(-20.0f + 10.0f * i, 0.1f, -10.0f);
 }
@@ -177,8 +183,19 @@ void Game::addEnemy(double x, double y, double z){
     newEnemy.addGroup(testGroup);
 }
 
+void Game::addRockToPick(double x, double y, double z){
+    auto& rockPickable(manager.addEntity());
+
+    rockPickable.name = "rockPickable";
+    rockPickable.addComponent<TransformComponent>(x, y, z);
+    rockPickable.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 0.02f, 0.02f, 0.02f);
+    rockPickable.addComponent<ModelComponent>("../data/miscObj/Rock.obj", glManager, "default");
+    rockPickable.addComponent<ColliderComponent>("RockPickableColider");
+    rockPickable.addGroup(testGroup);
+}
+
 void Game::throwRock(){
-    if(rockCooldown <= 0.0f){
+    if(rockCooldown <= 0.0f && Game::playerAmmo > 0){
         auto& rock(manager.addEntity());
         TransformComponent playerTransf = testEntity.getComponent<TransformComponent>();
         glm::vec4 viewUnit = camera->viewVector / norm(camera->viewVector) * 2.0f * playerTransf.x_Scale;
@@ -198,6 +215,7 @@ void Game::throwRock(){
         rock.getComponent<TransformComponent>().velocity.z = camera->viewVector.z * 2.0f;
 
         rockCooldown = THROW_ROCK_COOLDOWN;
+        Game::playerAmmo--;
 
         printf("Player: \n%.2f %.2f %.2f\n", playerTransf.getPos().x + playerTransf.xOffset, playerTransf.getPos().y + playerTransf.yOffset, playerTransf.getPos().z + playerTransf.zOffset);
     }

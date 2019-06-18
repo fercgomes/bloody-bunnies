@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "Components.h"
+#include "../game.h"
 #include <glm/vec4.hpp>
 
 typedef struct bbox{
@@ -55,6 +56,11 @@ public:
                 if(entity->name == "rock" && e->hasComponent<AIComponent>()){ //TODO: name == "rock" is also dumb
                     entity->destroy();
                     e->destroy();
+                }
+                if(entity->name == "player" && e->name == "rockPickable"){
+                    e->destroy();
+                    printf("Player picked a Rock\n");
+                    Game::playerAmmo++;
                 }
                 return true;
             }

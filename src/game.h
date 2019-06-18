@@ -13,6 +13,7 @@ public:
     void init(const char* title, int width, int height);
 
     void addEnemy(double x, double y, double z);
+    void addRockToPick(double x, double y, double z);
     void throwRock();
 
     void handleEvents();
@@ -25,6 +26,7 @@ public:
     static bool isRunning;
     static double dt;
     static float screenRatio;
+    static int playerAmmo;
 
     enum groupLabels : std::size_t
     {

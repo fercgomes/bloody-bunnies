@@ -99,9 +99,9 @@ void Camera::update()
             );
 
             position = glm::vec4(
-                center.x + playerTransf.position.x,
-                center.y + playerTransf.position.y,
-                center.z + playerTransf.position.z,
+                center.x + playerTransf.position.x + playerTransf.xOffset,
+                center.y + playerTransf.position.y + playerTransf.yOffset,
+                center.z + playerTransf.position.z + playerTransf.zOffset,
                 1.0f
                 );
 
@@ -111,6 +111,9 @@ void Camera::update()
                 z + playerTransf.position.z,
                 1.0f
                 );
+
+
+            lookAt = lookAt + 2.0f * (position - lookAt);
 
             break;
     }
