@@ -66,6 +66,10 @@ public:
 
     }
 
+    Manager& getManager(){
+        return manager;
+    }
+
     void update()
     {
         for(auto& c : components) c->update();

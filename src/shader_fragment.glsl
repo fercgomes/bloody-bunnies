@@ -10,7 +10,7 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-#define PLANAR_PROJECTION 0 
+#define PLANAR_PROJECTION 0
 #define SPHERICAL_PROJECTION  1
 #define TEXCOORD_PROJECTION  2
 
@@ -57,14 +57,17 @@ void main()
     /* Iluminação */
 
     /* Espectro da fonte de iluminação */
-    vec3 I = vec3(1.0, 1.0, 1.0);
+    vec3 I = vec3(0.94, 0.66, 0.33);
     /* Espectro da luz ambiente */
     vec3 Ia = vec3(0.2, 0.2, 0.2);
 
-    vec4 lightPos = vec4(0.0, 2.0, 1.0, 1.0);
+    vec4 lightPos = vec4(0.0, 20.0, 1.0, 1.0);
     vec4 lightDir = vec4(0.0, -1.0, 0.0, 0.0);
-    vec4 l = normalize(lightPos - origin);
+    vec4 l = normalize(lightPos - p);
     vec4 r = normalize(-l + 2*n*(dot(n, l)));
+
+    //Vetor usado para iluminação de Blinn-Phong
+    vec4 h = normalize(l + v);
 
     if ( mappingType == 1 )
     {
@@ -90,36 +93,41 @@ void main()
 
         // (u, v) = (x, y) normalizado em [0, 1]
         U = (position_model.x - minx) / (maxx - minx);
-        // V = (position_model.y - miny) / (maxy - miny);
-        V = (position_model.z - minz) / (maxz - minz);
+        V = (position_model.y - miny) / (maxy - miny);
+        //V = (position_model.z - minz) / (maxz - minz);
     }
     else if ( mappingType == 2 )
     {
         U = texcoords.x;
         V = texcoords.y;
     }
+    else if ( mappingType == 3 )
+    {
+        // (u, v) = (x, y) normalizado em [0, 1]
+        U = (position_model.x) - floor(position_model.x);
+        V = (position_model.y) - floor(position_model.y);
+        //V = (position_model.z - minz) / (maxz - minz);
+    }
 
     /* Refletância difusa */
     vec3 Kd0 = vec3(0.0, 0.0, 0.0);
     /* Refletancia especular */
-    vec3 Ks = vec3(0.3, 0.3, 0.4);
+    vec3 Ks = vec3(0.2, 0.2, 0.3);
     /* Refletancia ambiente */
     vec3 Ka = vec3(0.4, 0.4, 0.4);
     /* q */
     float q = 20.0;
 
-
     if(hasTexture == 1)
         Kd0 = texture(tex, vec2(U,V)).rgb;
-
 
     // Equação de Iluminação
     vec3 lambert_diffuse = Kd0 * I * max(0,dot(n,l));
     vec3 ambient = Ka * Ia;
-    vec3 phong = Ks * I * pow(max(0, dot(r, v)), q);
+    //vec3 phong = Ks * I * pow(max(0, dot(r, v)), q);
+    vec3 blinnPhong = Ks * I * pow(max(0, dot(n, h)), q);
 
-    color = lambert_diffuse + ambient + phong;
+    color = lambert_diffuse + ambient + blinnPhong;
 
     color = pow(color, vec3(1.0,1.0,1.0)/2.2);
-} 
-
+}

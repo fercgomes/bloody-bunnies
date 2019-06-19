@@ -7,7 +7,7 @@
 
 inline float to_degrees(float radians)
 {
-    return radians * (180.0 / M_PI);
+    return radians * (180.0 / PI);
 }
 
 Camera::Camera()
@@ -85,7 +85,7 @@ void Camera::update()
         case FreeCamera:
             lookAt = glm::vec4(x + position.x, y + position.y, z + position.z, 1.0f);
             break;
-        
+
         case LookAt:
             lookAt = entPos;
             position = glm::vec4(x + entPos.x, y + entPos.y, z + entPos.z, 1.0f);
@@ -99,9 +99,9 @@ void Camera::update()
             );
 
             position = glm::vec4(
-                center.x + playerTransf.position.x,
-                center.y + playerTransf.position.y,
-                center.z + playerTransf.position.z,
+                center.x + playerTransf.position.x + playerTransf.xOffset,
+                center.y + playerTransf.position.y + playerTransf.yOffset,
+                center.z + playerTransf.position.z + playerTransf.zOffset,
                 1.0f
                 );
 
@@ -112,9 +112,9 @@ void Camera::update()
                 1.0f
                 );
 
-            break;
 
-        default:
+            lookAt = lookAt + 2.0f * (position - lookAt);
+
             break;
     }
 
