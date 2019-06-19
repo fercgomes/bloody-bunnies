@@ -9,14 +9,18 @@
 
 #define THROW_ROCK_COOLDOWN 1.0f
 
+#define NUM_ENEMIES 6
+
 Manager manager;
 GLManager* glManager;
 Camera* camera;
 
 bool Game::isRunning = false;
+bool Game::gameLost = false;
 double Game::dt = 0;
 int Game::playerAmmo = 0;
 float Game::screenRatio = 1.0f;
+int Game::enemiesDefeated = 0;
 
 double rockCooldown = 0.0f;
 
@@ -31,11 +35,46 @@ auto& house(manager.addEntity());
 auto& box1(manager.addEntity());
 auto& box2(manager.addEntity());
 
+auto &wall1(manager.addEntity());
+auto &wall2(manager.addEntity());
+auto &wall3(manager.addEntity());
+auto &wall4(manager.addEntity());
+
 Game::Game()
 {}
 
 Game::~Game()
 {}
+
+void Game::addBrickWalls(){
+    wall1.name = "wall1";
+    wall1.addComponent<TransformComponent>(5.0f, 0.0f, 48.0f);
+    wall1.getComponent<TransformComponent>().setStuff(0.0f, PI, 0.0f, 5.0f, 3.0f, 10.0f);
+    wall1.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
+    wall1.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
+    wall1.addGroup(mapGroup);
+
+    wall2.name = "wall2";
+    wall2.addComponent<TransformComponent>(-5.0f, 0.0f, -48.0f);
+    wall2.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 5.0f, 3.0f, 10.0f);
+    wall2.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
+    wall2.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
+    wall2.addGroup(mapGroup);
+
+    wall3.name = "wall3";
+    wall3.addComponent<TransformComponent>(49.0f, 0.0f, 0.0f);
+    wall3.getComponent<TransformComponent>().setStuff(0.0f, 3*PI/2, 0.0f, 5.0f, 3.0f, 10.0f);
+    wall3.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
+    wall3.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
+    wall3.addGroup(mapGroup);
+
+    wall4.name = "wall4";
+    wall4.addComponent<TransformComponent>(-49.0f, 0.0f, 0.0f);
+    wall4.getComponent<TransformComponent>().setStuff(0.0f, PI/2, 0.0f, 5.0f, 3.0f, 10.0f);
+    wall4.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
+    wall4.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
+    wall4.addGroup(mapGroup);
+}
 
 void Game::init(const char* title, int width, int height)
 {
@@ -99,14 +138,13 @@ void Game::init(const char* title, int width, int height)
     testEntity.name = "player";
     testEntity.addComponent<TransformComponent>(26.001f, 0.002f, 24.001f);
     testEntity.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f);
-    testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
+    testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
     testEntity.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     testEntity.addComponent<KeyboardController>(camera);
     testEntity.addComponent<ColliderComponent>("colider");
     testEntity.addGroup(testGroup);
 
-
-    /* AI test */
+    /*
     AITest.name = "AI test";
     AITest.addComponent<TransformComponent>(36.001f, 0.002f, 20.001f);
     AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
@@ -119,12 +157,14 @@ void Game::init(const char* title, int width, int height)
 										glm::vec4(12.0f, 0.0f, 0.0f, 1.0f)
 										);
     AITest.addGroup(testGroup);
+    */
+
 
 
     box1.name = "box1";
     box1.addComponent<TransformComponent>(42.001f, 0.002f, 30.001f);
     //box1.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 1.0f, 0.1f, 0.1f);
-    box1.addComponent<ModelComponent>("../data/miscObj/box.obj", glManager, "default");
+    box1.addComponent<ModelComponent>("../data/miscObj/box.obj", glManager, "default", SPHERICAL_PROJECTION);
     box1.getComponent<ModelComponent>().loadTexture("../data/miscObj/box_diffuse.jpg");
     box1.addComponent<ColliderComponent>("Box1Colider");
     box1.addGroup(testGroup);
@@ -132,7 +172,7 @@ void Game::init(const char* title, int width, int height)
     box2.name = "box2";
     box2.addComponent<TransformComponent>(58.001f, 0.002f, 30.001f);
     box2.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f);
-    box2.addComponent<ModelComponent>("../data/miscObj/box.obj", glManager, "default");
+    box2.addComponent<ModelComponent>("../data/miscObj/box.obj", glManager, "default", SPHERICAL_PROJECTION);
     box2.getComponent<ModelComponent>().loadTexture("../data/miscObj/box_diffuse.jpg");
     box2.addComponent<ColliderComponent>("Box2Colider");
     box2.addGroup(testGroup);
@@ -140,14 +180,14 @@ void Game::init(const char* title, int width, int height)
     Terrain.name = "terrain";
     Terrain.addComponent<TransformComponent>();
     Terrain.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 50.0f, 50.0f, 50.0f);
-    Terrain.addComponent<ModelComponent>("../data/grass/grass.obj", glManager, "default");
+    Terrain.addComponent<ModelComponent>("../data/grass/grass.obj", glManager, "default", SPHERICAL_PROJECTION);
     Terrain.getComponent<ModelComponent>().loadTexture("../data/grass/grass.png");
     Terrain.getComponent<ModelComponent>().mappingType = 2;
     Terrain.addGroup(mapGroup);
 
     house.addComponent<TransformComponent>();
     house.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 0.1f, 0.1f, 0.1f);
-    house.addComponent<ModelComponent>("../data/house/house.obj", glManager, "default");
+    house.addComponent<ModelComponent>("../data/house/house.obj", glManager, "default", SPHERICAL_PROJECTION);
     house.getComponent<ModelComponent>().loadTexture("../data/house/house.jpg");
     house.getComponent<ModelComponent>().mappingType = 2;
     house.addGroup(mapGroup);
@@ -163,15 +203,17 @@ void Game::init(const char* title, int width, int height)
     for(int i = 0; i < 10; i++)
         addRockToPick(-30.0f + 8.0f * i, 0.1f, -17.0f);
 
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < NUM_ENEMIES; i++)
         addEnemy(-20.0f + 10.0f * i, 0.1f, -10.0f);
+
+    addBrickWalls();
 }
 
 void Game::addEnemy(double x, double y, double z){
     auto& newEnemy(manager.addEntity());
     newEnemy.name = "Enemy";
     newEnemy.addComponent<TransformComponent>(x, y, z);
-    newEnemy.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
+    newEnemy.addComponent<ModelComponent>("../bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
     newEnemy.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     newEnemy.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
     newEnemy.addComponent<ColliderComponent>("EnemyCollider");
@@ -189,7 +231,7 @@ void Game::addRockToPick(double x, double y, double z){
     rockPickable.name = "rockPickable";
     rockPickable.addComponent<TransformComponent>(x, y, z);
     rockPickable.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 0.02f, 0.02f, 0.02f);
-    rockPickable.addComponent<ModelComponent>("../data/miscObj/Rock.obj", glManager, "default");
+    rockPickable.addComponent<ModelComponent>("../data/miscObj/Rock.obj", glManager, "default", SPHERICAL_PROJECTION);
     rockPickable.addComponent<ColliderComponent>("RockPickableColider");
     rockPickable.addGroup(testGroup);
 }
@@ -203,7 +245,7 @@ void Game::throwRock(){
         rock.name = "rock";
         rock.addComponent<TransformComponent>(playerTransf.getPos().x + playerTransf.xOffset + viewUnit.x, playerTransf.getPos().y + playerTransf.yOffset + viewUnit.y, playerTransf.getPos().z + playerTransf.zOffset + viewUnit.z);
         rock.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 0.02f, 0.02f, 0.02f);
-        rock.addComponent<ModelComponent>("../data/miscObj/Rock.obj", glManager, "default");
+        rock.addComponent<ModelComponent>("../data/miscObj/Rock.obj", glManager, "default", SPHERICAL_PROJECTION);
         //rock.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
         rock.addComponent<ColliderComponent>("RockColider");
         rock.addComponent<AutoKillComponent>(4.0f);
@@ -216,8 +258,6 @@ void Game::throwRock(){
 
         rockCooldown = THROW_ROCK_COOLDOWN;
         Game::playerAmmo--;
-
-        printf("Player: \n%.2f %.2f %.2f\n", playerTransf.getPos().x + playerTransf.xOffset, playerTransf.getPos().y + playerTransf.yOffset, playerTransf.getPos().z + playerTransf.zOffset);
     }
 }
 
@@ -330,6 +370,16 @@ void Game::update()
     Game::isRunning = !glfwWindowShouldClose(window);
 
     rockCooldown -= this->dt;
+
+    if(Game::gameLost){
+        printf("Player Lost\n");
+        Game::isRunning = false;
+    }
+    if(Game::enemiesDefeated == NUM_ENEMIES){
+        printf("Player Won\n");
+        Game::isRunning = false;
+    }
+
 }
 
 

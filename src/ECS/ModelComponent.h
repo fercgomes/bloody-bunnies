@@ -6,9 +6,10 @@
 #include <vector>
 #include <glm/mat4x4.hpp>
 
-#define PLANAR_PROJECTION 1
-#define SPHERICAL_PROJECTION 0
+#define PLANAR_PROJECTION 0
+#define SPHERICAL_PROJECTION 1
 #define TEXCOORD_PROJECTION 2
+#define REPEAT_PLANAR 3
 
 class ModelComponent : public Component
 {
@@ -24,7 +25,7 @@ public:
     Object3D model;
     int mappingType = PLANAR_PROJECTION;
 
-    ModelComponent(const char* filename, GLManager* glManager, std::string shader) :
+    ModelComponent(const char* filename, GLManager* glManager, std::string shader, int projType) :
         glManager(glManager),
         shader(shader)
     {
@@ -34,6 +35,7 @@ public:
         objModel->computeNormals();
 
         model = glManager->generateObject3D(objModel);
+        mappingType = projType;
 
         delete(objModel);
     }

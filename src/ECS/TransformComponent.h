@@ -1,5 +1,6 @@
 #pragma once
 #include "Components.h"
+#include "BezierComponent.h"
 #include "ColliderComponent.h"
 #include <glm/vec4.hpp>
 #include "../Vector3D.h"
@@ -100,7 +101,11 @@ public:
         position.y += velocity.y * Game::dt;
         position.z += velocity.z * Game::dt;
 
-        if(entity->hasComponent<ColliderComponent>() && entity->getComponent<ColliderComponent>().isColliding()){
+        bool outOfMap = false;
+        if(position.x + xOffset + x_Scale / 2.0f >= 49.0f || position.x + xOffset - x_Scale / 2.0f <= -49.0f || position.z + zOffset + z_Scale / 2.0f >= 49.0f || position.z + zOffset - z_Scale / 2.0f <= -49.0f)
+            outOfMap = true;
+
+        if((entity->hasComponent<ColliderComponent>() && entity->getComponent<ColliderComponent>().isColliding()) || outOfMap){
             onAir = false;
             position.x -= velocity.x * Game::dt;
             position.y -= velocity.y * Game::dt;

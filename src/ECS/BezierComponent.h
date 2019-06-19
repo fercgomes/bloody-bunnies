@@ -1,3 +1,4 @@
+#pragma once
 #include "../game.h"
 #include "Components.h"
 #include "ColliderComponent.h"
@@ -23,51 +24,9 @@ public:
 		running = false;
 	}
 
-	void animate()
-	{
-		if(!running)
-		{
-			running = true;
-			p1_relative = p1 + entity->getComponent<TransformComponent>().getPos();
-			p2_relative = p2 + entity->getComponent<TransformComponent>().getPos();
-			p3_relative = p3 + entity->getComponent<TransformComponent>().getPos();
-			p4_relative = p4 + entity->getComponent<TransformComponent>().getPos();
-		}
-	}
+	void animate();
 
-	void update() override
-	{
-		if(running)
-		{
-			currentTime += Game::dt;
-
-			if(currentTime <= duration)
-			{
-				auto& transf = entity->getComponent<TransformComponent>();
-				auto prevPos = transf.position;
-				auto newPos = getPosition();
-
-				transf.position.x = newPos.x;
-				transf.position.y = newPos.y;
-				transf.position.z = newPos.z;
-
-				//Check collision
-                if(entity->hasComponent<ColliderComponent>()){
-                    if(entity->getComponent<ColliderComponent>().isColliding()){
-                        transf.position = prevPos;
-                        running = false;
-                        currentTime = 0.0f;
-                        return;
-                    }
-                }
-			}
-			else
-			{
-				running = false;
-				currentTime = 0.0f;
-			}
-		}
-	}
+	void update();
 
 	glm::vec4 getPosition()
 	{
@@ -81,5 +40,26 @@ public:
 		glm::vec4 result = c123 + t * (c234 - c123);
 
 		return result;
+	}
+
+	void setP(int p, glm::vec4 newp){
+        switch(p){
+            case 1:
+                this->p1 = newp;
+                break;
+            case 2:
+                this->p2 = newp;
+                break;
+            case 3:
+                this->p3 = newp;
+                break;
+            case 4:
+                this->p4 = newp;
+                break;
+        }
+	}
+
+	float getDuration(){
+        return duration;
 	}
 };

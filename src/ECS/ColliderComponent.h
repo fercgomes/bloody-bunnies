@@ -52,15 +52,18 @@ public:
 
         for(auto& e : myGroup){
             if(e != entity && this->checkAgainst(*e)){
-                printf("%s collided with %s\n", entity->name.c_str(), e->name.c_str());
                 if(entity->name == "rock" && e->hasComponent<AIComponent>()){ //TODO: name == "rock" is also dumb
                     entity->destroy();
                     e->destroy();
+                    Game::enemiesDefeated++;
                 }
-                if(entity->name == "player" && e->name == "rockPickable"){
+                else if(entity->name == "player" && e->name == "rockPickable"){
                     e->destroy();
                     printf("Player picked a Rock\n");
                     Game::playerAmmo++;
+                }
+                else if(entity->name == "Enemy" && e->name == "player"){
+                    Game::gameLost = true;
                 }
                 return true;
             }
