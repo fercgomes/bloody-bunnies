@@ -5,7 +5,7 @@ TARGET = bin/game
 
 SRCEXT = cpp
 #SOURCES = $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
-SOURCES = src/main.cpp src/game.cpp src/Camera.cpp src/GLManager.cpp src/Vector3D.cpp src/ECS/ECS.cpp  src/tiny_obj_loader.cpp src/matrices.cpp  lib-linux/libglfw3.a src/stb_image.cpp
+SOURCES = src/main.cpp src/game.cpp src/Camera.cpp src/GLManager.cpp src/Vector3D.cpp src/ECS/ECS.cpp src/ECS/ColliderComponent.cpp  src/tiny_obj_loader.cpp src/matrices.cpp  lib-linux/libglfw3.a src/stb_image.cpp
 OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS = -g -fpermissive -Wall -std=c++11 -I ./include/ 
 
