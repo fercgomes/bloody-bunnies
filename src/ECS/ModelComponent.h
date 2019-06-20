@@ -6,9 +6,10 @@
 #include <vector>
 #include <glm/mat4x4.hpp>
 
-#define PLANAR_PROJECTION 1
-#define SPHERICAL_PROJECTION 0
+#define PLANAR_PROJECTION 0
+#define SPHERICAL_PROJECTION 1
 #define TEXCOORD_PROJECTION 2
+#define REPEAT_PLANAR 3
 
 class ModelComponent : public Component
 {
@@ -24,7 +25,7 @@ public:
     Object3D model;
     int mappingType = PLANAR_PROJECTION;
 
-    ModelComponent(const char* filename, GLManager* glManager, std::string shader) :
+    ModelComponent(const char* filename, GLManager* glManager, std::string shader, int projType) :
         glManager(glManager),
         shader(shader)
     {
@@ -34,6 +35,7 @@ public:
         objModel->computeNormals();
 
         model = glManager->generateObject3D(objModel);
+        mappingType = projType;
 
         delete(objModel);
     }
@@ -55,7 +57,8 @@ public:
             << "," << model.bbox_max.z
             << ")" << std::endl;
 
-        entity->getComponent<TransformComponent>().yOffset = (float)std::abs(model.bbox_min.y);
+        entity->getComponent<TransformComponent>().yOffset = -(model.bbox_min.y) * entity->getComponent<TransformComponent>().y_Scale;
+        //entity->getComponent<TransformComponent>().position.y += (float)-model.bbox_min.y;
     }
 
     void update() override

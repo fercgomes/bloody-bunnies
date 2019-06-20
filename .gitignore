@@ -1,5 +1,9 @@
 bin/
 build/
+obj/
 .vscode/
 *.bak
 *.swp
+Trabalho.cbp
+Trabalho.depend
+Trabalho.layout
