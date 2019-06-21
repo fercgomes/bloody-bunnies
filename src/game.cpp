@@ -55,28 +55,28 @@ void Game::addBrickWalls(){
     wall1.name = "wall1";
     wall1.addComponent<TransformComponent>(5.0f, 0.0f, 49.0f);
     wall1.getComponent<TransformComponent>().setStuff(0.0f, PI, 0.0f, 5.0f, 3.0f, 10.0f);
-    wall1.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
+    wall1.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "gouraud", REPEAT_PLANAR);
     wall1.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
     wall1.addGroup(mapGroup);
 
     wall2.name = "wall2";
     wall2.addComponent<TransformComponent>(-5.0f, 0.0f, -49.0f);
     wall2.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 5.0f, 3.0f, 10.0f);
-    wall2.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
+    wall2.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "gouraud", REPEAT_PLANAR);
     wall2.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
     wall2.addGroup(mapGroup);
 
     wall3.name = "wall3";
     wall3.addComponent<TransformComponent>(49.0f, 0.0f, 0.0f);
     wall3.getComponent<TransformComponent>().setStuff(0.0f, 3*PI/2, 0.0f, 5.0f, 3.0f, 10.0f);
-    wall3.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
+    wall3.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "gouraud", REPEAT_PLANAR);
     wall3.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
     wall3.addGroup(mapGroup);
 
     wall4.name = "wall4";
     wall4.addComponent<TransformComponent>(-49.0f, 0.0f, 0.0f);
     wall4.getComponent<TransformComponent>().setStuff(0.0f, PI/2, 0.0f, 5.0f, 3.0f, 10.0f);
-    wall4.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
+    wall4.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "gouraud", REPEAT_PLANAR);
     wall4.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
     wall4.addGroup(mapGroup);
 }
@@ -129,21 +129,18 @@ void Game::init(const char* title, int width, int height)
     const GLubyte *glslversion = glGetString(GL_SHADING_LANGUAGE_VERSION);
     printf("GPU: %s, %s, OpenGL %s, GLSL %s\n", vendor, renderer, glversion, glslversion);
 
-
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    glManager = new GLManager("../src/shader_vertex.glsl", "../src/shader_fragment.glsl");
+    glManager = new GLManager();
     camera = new Camera();
-
-    glManager->setActiveShader("default");
 
     testEntity.name = "player";
     testEntity.addComponent<TransformComponent>(26.001f, 0.002f, 24.001f);
     testEntity.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f);
-    testEntity.addComponent<ModelComponent>("../bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
+    testEntity.addComponent<ModelComponent>("../data/bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
     testEntity.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     testEntity.addComponent<KeyboardController>(camera);
     testEntity.addComponent<ColliderComponent>("colider");
@@ -152,7 +149,7 @@ void Game::init(const char* title, int width, int height)
     /*
     AITest.name = "AI test";
     AITest.addComponent<TransformComponent>(36.001f, 0.002f, 20.001f);
-    AITest.addComponent<ModelComponent>("../bunny.obj", glManager, "default");
+    AITest.addComponent<ModelComponent>("../data/bunny.obj", glManager, "default");
     AITest.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     AITest.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
     AITest.addComponent<ColliderComponent>("colider2");
@@ -250,7 +247,7 @@ void Game::addEnemy(double x, double y, double z){
     auto& newEnemy(manager.addEntity());
     newEnemy.name = "Enemy";
     newEnemy.addComponent<TransformComponent>(x, y, z);
-    newEnemy.addComponent<ModelComponent>("../bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
+    newEnemy.addComponent<ModelComponent>("../data/bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
     newEnemy.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
     newEnemy.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
     newEnemy.addComponent<ColliderComponent>("EnemyCollider");

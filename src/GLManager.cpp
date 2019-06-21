@@ -253,23 +253,16 @@ void GLManager::drawObject(Object3D& model)
 }
 
 
-void GLManager::LoadShadersFromFiles()
+void GLManager::LoadShadersFromFiles(const char* vertex_shader, const char* frag_shader, std::string shader_name)
 {
-    const char* defaultVertex = "../src/shader_vertex.glsl";
-    const char* defaultFragment = "../src/shader_fragment.glsl";
+    // const char* defaultVertex = "../src/gouraud_vert.glsl";
+    // const char* defaultFragment = "../src/gouraud_frag.glsl";
 
-    auto vertex_shader_id = LoadShader_Vertex(defaultVertex);
-    auto fragment_shader_id = LoadShader_Fragment(defaultFragment);
+    auto vertex_shader_id = LoadShader_Vertex(vertex_shader);
+    auto fragment_shader_id = LoadShader_Fragment(frag_shader);
 
     auto program_id = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
-    shaders.emplace(std::pair<std::string, GLuint>("default", program_id));
-
-    // Buscamos o endereço das variáveis definidas dentro do Vertex Shader.
-    // Utilizaremos estas variáveis para enviar dados para a placa de vídeo
-    // (GPU)! Veja arquivo "shader_vertex.glsl" e "shader_fragment.glsl".
-    model_uniform           = glGetUniformLocation(program_id, "model"); // Variável da matriz "model"
-    view_uniform            = glGetUniformLocation(program_id, "view"); // Variável da matriz "view" em shader_vertex.glsl
-    projection_uniform      = glGetUniformLocation(program_id, "projection"); // Variável da matriz "projection" em shader_vertex.glsl
+    shaders.emplace(std::pair<std::string, GLuint>(shader_name, program_id));
 }
 
 GLuint GLManager::LoadShader_Vertex(const char* filename)
@@ -417,17 +410,10 @@ GLuint GLManager::CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shad
     return program_id;
 }
 
-GLManager::GLManager(const char* vertexShader, const char* fragmentShader)
-{
-    LoadShadersFromFiles();
-}
-
 GLManager::GLManager()
 {
-    LoadShadersFromFiles();
-
-    bbox_min_uniform        = glGetUniformLocation(shaders["default"], "bbox_min");
-    bbox_max_uniform        = glGetUniformLocation(shaders["default"], "bbox_max");
+    LoadShadersFromFiles("../src/shader_vertex.glsl", "../src/shader_fragment.glsl", "default");
+    LoadShadersFromFiles("../src/gouraud_vert.glsl", "../src/gouraud_frag.glsl", "gouraud");
 }
 
 void GLManager::setActiveShader(std::string shaderName)
@@ -439,6 +425,13 @@ void GLManager::setActiveShader(std::string shaderName)
     else
     {
         glUseProgram(shaders[shaderName]);
+        // std::cout << "Using " << shaders[shaderName] << std::endl;
+
+        model_uniform           = glGetUniformLocation(shaders[shaderName], "model"); // Variável da matriz "model"
+        view_uniform            = glGetUniformLocation(shaders[shaderName], "view"); // Variável da matriz "view" em shader_vertex.glsl
+        projection_uniform      = glGetUniformLocation(shaders[shaderName], "projection"); // Variável da matriz "projection" em shader_vertex.glsl
+        bbox_min_uniform        = glGetUniformLocation(shaders[shaderName], "bbox_min");
+        bbox_max_uniform        = glGetUniformLocation(shaders[shaderName], "bbox_max");
     }
 }
 
