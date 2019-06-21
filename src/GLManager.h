@@ -67,7 +67,7 @@ public:
     /* draws a object from a Object3D */
     void drawObject(Object3D& model);
 
-    void LoadShadersFromFiles(); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
+    void LoadShadersFromFiles(const char*, const char*, std::string); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
     GLuint LoadShader_Vertex(const char* filename);   // Carrega um vertex shader
     GLuint LoadShader_Fragment(const char* filename); // Carrega um fragment shader
     void LoadShader(const char* filename, GLuint shader_id); // Função utilizada pelas duas acima
@@ -78,8 +78,6 @@ public:
     void setActiveShader(std::string shaderName);
 
     GLManager();
-    GLManager(const char* vertexShader, const char* fragmentShader);
-
 private:
 
     int loadedTextures = 0;
