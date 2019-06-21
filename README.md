@@ -1,6 +1,8 @@
 # Bloody Bunnies
 Bloody Bunnies is a simple OpenGL game developed for our *Computer Graphics* class at *UFRGS* (Porto Alegre - Brazil).
 
+[![Build Status](https://travis-ci.org/fercgomes/bloody-bunnies.svg?branch=master)](https://travis-ci.org/fercgomes/bloody-bunnies)
+
 ![Game screenshot](/img/game.png)
 
 ## Compiling
