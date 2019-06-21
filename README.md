@@ -1,6 +1,8 @@
 # Bloody Bunnies
 Bloody Bunnies is a simple OpenGL game developed for our *Computer Graphics* class at *UFRGS* (Porto Alegre - Brazil).
 
+![Game screenshot](/img/game.png)
+
 ## Compiling
 Building is managed by CMake:
 ~~~
