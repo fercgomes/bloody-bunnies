@@ -57,9 +57,9 @@ void main()
     /* Iluminação */
 
     /* Espectro da fonte de iluminação */
-    vec3 I = vec3(0.94, 0.66, 0.33);
+    vec3 I = vec3(1.0, 1.0, 1.0);
     /* Espectro da luz ambiente */
-    vec3 Ia = vec3(0.2, 0.2, 0.2);
+    vec3 Ia = vec3(0.6, 0.6, 0.6);
 
     vec4 lightPos = vec4(0.0, 20.0, 1.0, 1.0);
     vec4 lightDir = vec4(0.0, -1.0, 0.0, 0.0);
