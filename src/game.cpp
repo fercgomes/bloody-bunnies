@@ -40,6 +40,11 @@ auto &wall2(manager.addEntity());
 auto &wall3(manager.addEntity());
 auto &wall4(manager.addEntity());
 
+auto& balloon1(manager.addEntity());
+auto& balloon2(manager.addEntity());
+auto& balloon3(manager.addEntity());
+auto& balloon4(manager.addEntity());
+
 Game::Game()
 {}
 
@@ -48,14 +53,14 @@ Game::~Game()
 
 void Game::addBrickWalls(){
     wall1.name = "wall1";
-    wall1.addComponent<TransformComponent>(5.0f, 0.0f, 48.0f);
+    wall1.addComponent<TransformComponent>(5.0f, 0.0f, 49.0f);
     wall1.getComponent<TransformComponent>().setStuff(0.0f, PI, 0.0f, 5.0f, 3.0f, 10.0f);
     wall1.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
     wall1.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
     wall1.addGroup(mapGroup);
 
     wall2.name = "wall2";
-    wall2.addComponent<TransformComponent>(-5.0f, 0.0f, -48.0f);
+    wall2.addComponent<TransformComponent>(-5.0f, 0.0f, -49.0f);
     wall2.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 5.0f, 3.0f, 10.0f);
     wall2.addComponent<ModelComponent>("../data/BrickWall/wall2.obj", glManager, "default", REPEAT_PLANAR);
     wall2.getComponent<ModelComponent>().loadTexture("../data/BrickWall/wallBrick.jpg");
@@ -160,6 +165,37 @@ void Game::init(const char* title, int width, int height)
     */
 
 
+    balloon1.name = "Balloon";
+    balloon1.addComponent<TransformComponent>(-48.3f, 4.0f, 0.0f);
+    balloon1.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f);
+    balloon1.addComponent<ModelComponent>("../data/ball.obj", glManager, "default", SPHERICAL_PROJECTION);
+    //balloon.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
+    balloon1.addComponent<ColliderComponent>("colider", true, 3.0f);
+    balloon1.addGroup(testGroup);
+
+    balloon2.name = "Balloon";
+    balloon2.addComponent<TransformComponent>(48.3f, 4.0f, 0.0f);
+    balloon2.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f);
+    balloon2.addComponent<ModelComponent>("../data/ball.obj", glManager, "default", SPHERICAL_PROJECTION);
+    //balloon.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
+    balloon2.addComponent<ColliderComponent>("colider", true, 3.0f);
+    balloon2.addGroup(testGroup);
+
+    balloon3.name = "Balloon";
+    balloon3.addComponent<TransformComponent>(0.0f, 4.0f, -48.3f);
+    balloon3.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f);
+    balloon3.addComponent<ModelComponent>("../data/ball.obj", glManager, "default", SPHERICAL_PROJECTION);
+    //balloon.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
+    balloon3.addComponent<ColliderComponent>("colider", true, 3.0f);
+    balloon3.addGroup(testGroup);
+
+    balloon4.name = "Balloon";
+    balloon4.addComponent<TransformComponent>(0.0f, 4.0f, 48.3f);
+    balloon4.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f);
+    balloon4.addComponent<ModelComponent>("../data/ball.obj", glManager, "default", SPHERICAL_PROJECTION);
+    //balloon.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
+    balloon4.addComponent<ColliderComponent>("colider", true, 3.0f);
+    balloon4.addGroup(testGroup);
 
     box1.name = "box1";
     box1.addComponent<TransformComponent>(42.001f, 0.002f, 30.001f);
@@ -191,6 +227,7 @@ void Game::init(const char* title, int width, int height)
     house.getComponent<ModelComponent>().loadTexture("../data/house/house.jpg");
     house.getComponent<ModelComponent>().mappingType = 2;
     house.addGroup(mapGroup);
+
 
     /* Camera set-up */
     camera->bindEntity(&testEntity);

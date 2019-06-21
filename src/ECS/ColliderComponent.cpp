@@ -33,11 +33,57 @@ void ColliderComponent::init()
     }
 }
 
+bool ColliderComponent::isColliding(){
+        auto& myGroup = entity->getManager().getGroup(0); //TODO: getGroup(0) is very dumb
+        if(this->isAsphere())
+            return false;
+
+        for(auto& e : myGroup){
+            if(e != entity && this->checkAgainst(*e)){
+                if(entity->name == "rock" && e->hasComponent<AIComponent>()){ //TODO: name == "rock" is also dumb
+                    entity->destroy();
+                    e->destroy();
+                    Game::enemiesDefeated++;
+                }
+                else if(entity->name == "player" && e->name == "rockPickable"){
+                    e->destroy();
+                    printf("Player picked a Rock\n");
+                    Game::playerAmmo++;
+                }
+                else if(entity->name == "Enemy" && e->name == "player"){
+                    Game::gameLost = true;
+                }
+                else if(entity->name == "rock" && e->name == "Balloon"){
+                    Game::addRockToPick(e->getComponent<TransformComponent>().getPos().x, e->getComponent<TransformComponent>().getPos().y, e->getComponent<TransformComponent>().getPos().z);
+                    Game::addRockToPick(e->getComponent<TransformComponent>().getPos().x, e->getComponent<TransformComponent>().getPos().y + 4.0f, e->getComponent<TransformComponent>().getPos().z);
+                    Game::addRockToPick(e->getComponent<TransformComponent>().getPos().x, e->getComponent<TransformComponent>().getPos().y + 8.0f, e->getComponent<TransformComponent>().getPos().z);
+                    e->destroy();
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 bool ColliderComponent::checkAgainst(Entity& targetEntity)
 {
     //We cant collide against an entity without ColliderComponent
     if(!targetEntity.hasComponent<ColliderComponent>())
         return false;
+
+    if(targetEntity.getComponent<ColliderComponent>().isAsphere()){
+        BoundingBox myBB = this->getBoundingBox();
+        glm::vec4 centralPoint((myBB.maxX + myBB.minX) / 2, (myBB.maxY + myBB.minY) / 2, (myBB.maxZ + myBB.minZ) / 2, 1.0f);
+        centralPoint = centralPoint + transform->getPos() + glm::vec4(transform->xOffset, transform->yOffset, transform->zOffset, 1.0f);
+
+        TransformComponent targetTransform = targetEntity.getComponent<TransformComponent>();
+
+        if(norm(centralPoint - targetTransform.getPos()) < targetEntity.getComponent<ColliderComponent>().getSphereRadius())
+            return true;
+        else
+            return false;
+    }
 
     BoundingBox targetBB = targetEntity.getComponent<ColliderComponent>().getBoundingBox();
     BoundingBox myTempBB = this->getBoundingBox();

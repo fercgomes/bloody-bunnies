@@ -13,8 +13,8 @@ public:
     void addBrickWalls();
     void init(const char* title, int width, int height);
 
-    void addEnemy(double x, double y, double z);
-    void addRockToPick(double x, double y, double z);
+    static void addEnemy(double x, double y, double z);
+    static void addRockToPick(double x, double y, double z);
     void throwRock();
 
     void handleEvents();

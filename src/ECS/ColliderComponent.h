@@ -18,6 +18,8 @@ class ColliderComponent : public Component
 private:
     BoundingBox boundingbox;
     bool initializedBoundingBox;
+    bool isSphere;
+    float sphereRadius;
 
 public:
     std::string tag;
@@ -27,12 +29,22 @@ public:
     ColliderComponent(std::string t)
     {
         tag = t;
+        isSphere = false;
     }
 
     ColliderComponent(std::string t, BoundingBox box)
     {
         tag = t;
         this->boundingbox = box;
+        this->initializedBoundingBox = true;
+        isSphere = false;
+    }
+
+    ColliderComponent(std::string t, bool sphere, float radius)
+    {
+        tag = t;
+        this->isSphere = true;
+        this->sphereRadius = radius;
         this->initializedBoundingBox = true;
     }
 
@@ -47,30 +59,11 @@ public:
 
     }
 
-    bool isColliding(){
-        auto& myGroup = entity->getManager().getGroup(0); //TODO: getGroup(0) is very dumb
+    bool isAsphere(){return this->isSphere;}
 
-        for(auto& e : myGroup){
-            if(e != entity && this->checkAgainst(*e)){
-                if(entity->name == "rock" && e->hasComponent<AIComponent>()){ //TODO: name == "rock" is also dumb
-                    entity->destroy();
-                    e->destroy();
-                    Game::enemiesDefeated++;
-                }
-                else if(entity->name == "player" && e->name == "rockPickable"){
-                    e->destroy();
-                    printf("Player picked a Rock\n");
-                    Game::playerAmmo++;
-                }
-                else if(entity->name == "Enemy" && e->name == "player"){
-                    Game::gameLost = true;
-                }
-                return true;
-            }
-        }
+    float getSphereRadius(){return this->sphereRadius;}
 
-        return false;
-    }
+    bool isColliding();
 
     //Checks if we are colliding with targetEntity
     bool checkAgainst(Entity& targetEntity);
