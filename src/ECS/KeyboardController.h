@@ -19,6 +19,7 @@ public:
     bool goingRight = false;
     bool goingLeft = false;
     bool jump = false;
+    bool sprint = false;
 
     float speed = 4.0f;
 
@@ -49,7 +50,7 @@ public:
         /* If the player jumped is not already on air */
         if(jump && !transform->onAir)
         {
-            float jumpSpeed = 10.0f;
+            float jumpSpeed =7.0f;
             newVelocity.y = jumpSpeed;
             transform->onAir = true;
         }
@@ -76,6 +77,13 @@ public:
         {
             newVelocity.x += speed * -rightVector.x;
             newVelocity.z += speed * -rightVector.z;
+        }
+
+        if(sprint)
+        {
+            float sprintSpeed = 1.5f;
+            newVelocity.x *= sprintSpeed;
+            newVelocity.z *= sprintSpeed;
         }
 
         /* We can only jump once */

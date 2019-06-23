@@ -86,8 +86,7 @@ public:
     {
         if(appears)
         {
-            GLuint shaderID = glManager->shaders["gouraud"];
-            // GLuint shaderID = glManager->shaders[shader];
+            GLuint shaderID = glManager->shaders[shader];
 
             glm::mat4 modelTransf = entity->getComponent<TransformComponent>().getModelMatrix();
             glUniformMatrix4fv(glManager->model_uniform, 1 , GL_FALSE , glm::value_ptr(modelTransf));

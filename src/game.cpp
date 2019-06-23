@@ -8,7 +8,6 @@
 #include "GLManager.h"
 
 #define THROW_ROCK_COOLDOWN 1.0f
-
 #define NUM_ENEMIES 6
 
 Manager manager;
@@ -139,7 +138,7 @@ void Game::init(const char* title, int width, int height)
 
     testEntity.name = "player";
     testEntity.addComponent<TransformComponent>(26.001f, 0.002f, 24.001f);
-    testEntity.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f);
+    testEntity.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 1.5f, 1.5f, 1.5f);
     testEntity.addComponent<ModelComponent>("../data/bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
     testEntity.getComponent<ModelComponent>().loadTexture("../data/lightBrown.jpg");
     testEntity.addComponent<KeyboardController>(camera);
@@ -323,12 +322,6 @@ void Game::handleEvents()
         testEntity.getComponent<ModelComponent>().hide();
     }
 
-    state = glfwGetKey(window, GLFW_KEY_F9);
-    if(state == GLFW_PRESS)
-    {
-		AITest.getComponent<BezierComponent>().animate();
-    }
-
     if(camera->getCameraMode() == Camera::LookAt ||
        camera->getCameraMode() == Camera::FirstPerson)
     {
@@ -365,6 +358,14 @@ void Game::handleEvents()
         state = glfwGetKey(window, GLFW_KEY_E);
         if(state == GLFW_PRESS)
             this->throwRock();
+
+        state = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
+        if(state == GLFW_PRESS)
+            player->sprint = true;
+
+        state = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
+        if(state == GLFW_RELEASE)
+            player->sprint = false;
 
     }
     else if(camera->getCameraMode() == Camera::FreeCamera)

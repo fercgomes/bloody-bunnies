@@ -61,10 +61,11 @@ void main()
     /* Espectro da luz ambiente */
     vec3 Ia = vec3(0.6, 0.6, 0.6);
 
-    vec4 lightPos = vec4(0.0, 20.0, 1.0, 1.0);
+    vec4 lightPos = vec4(0.0, 100.0, 1.0, 1.0);
     vec4 lightDir = vec4(0.0, -1.0, 0.0, 0.0);
     vec4 l = normalize(lightPos - p);
     vec4 r = normalize(-l + 2*n*(dot(n, l)));
+
 
     //Vetor usado para iluminação de Blinn-Phong
     vec4 h = normalize(l + v);
@@ -116,7 +117,7 @@ void main()
     /* Refletancia ambiente */
     vec3 Ka = vec3(0.4, 0.4, 0.4);
     /* q */
-    float q = 20.0;
+    float q = 15.0;
 
     if(hasTexture == 1)
         Kd0 = texture(tex, vec2(U,V)).rgb;
@@ -129,5 +130,5 @@ void main()
 
     color = lambert_diffuse + ambient + blinnPhong;
 
-    color = pow(color, vec3(1.0,1.0,1.0)/2.2);
+    color = pow(color, vec3(1.0,1.0,1.0)/1.2);
 }

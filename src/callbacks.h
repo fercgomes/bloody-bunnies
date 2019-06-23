@@ -5,7 +5,7 @@ bool g_RightMouseButtonPressed = false; // Análogo para botão direito do mouse
 bool g_MiddleMouseButtonPressed = false; // Análogo para botão do meio do mouse
 float g_CameraTheta = 0.0f; // Ângulo no plano ZX em relação ao eixo Z
 float g_CameraPhi = 0.5f;   // Ângulo em relação ao eixo Y
-float g_CameraDistance = 5.0f; // Distância da câmera para a origem
+float g_CameraDistance = 15.0f; // Distância da câmera para a origem
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
