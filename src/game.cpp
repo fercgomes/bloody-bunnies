@@ -141,7 +141,7 @@ void Game::init(const char* title, int width, int height)
     testEntity.addComponent<TransformComponent>(26.001f, 0.002f, 24.001f);
     testEntity.getComponent<TransformComponent>().setStuff(0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f);
     testEntity.addComponent<ModelComponent>("../data/bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
-    testEntity.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
+    testEntity.getComponent<ModelComponent>().loadTexture("../data/lightBrown.jpg");
     testEntity.addComponent<KeyboardController>(camera);
     testEntity.addComponent<ColliderComponent>("colider");
     testEntity.addGroup(testGroup);
@@ -248,7 +248,7 @@ void Game::addEnemy(double x, double y, double z){
     newEnemy.name = "Enemy";
     newEnemy.addComponent<TransformComponent>(x, y, z);
     newEnemy.addComponent<ModelComponent>("../data/bunny.obj", glManager, "default", SPHERICAL_PROJECTION);
-    newEnemy.getComponent<ModelComponent>().loadTexture("../data/tc-earth_daymap_surface.jpg");
+    newEnemy.getComponent<ModelComponent>().loadTexture("../data/darkBrown.jpg");
     newEnemy.addComponent<AIComponent>(&testEntity.getComponent<TransformComponent>());
     newEnemy.addComponent<ColliderComponent>("EnemyCollider");
 	newEnemy.addComponent<BezierComponent>(2.0f,
